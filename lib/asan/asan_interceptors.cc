@@ -718,6 +718,10 @@ INTERCEPTOR(int, fork, void) {
 
 // ---------------------- InitializeAsanInterceptors ---------------- {{{1
 namespace __asan {
+  // TODO: Install SEH.
+  void InitializeSEHonWindows64() {
+  }
+
 void InitializeAsanInterceptors() {
   static bool was_called_once;
   CHECK(was_called_once == false);

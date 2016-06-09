@@ -431,7 +431,7 @@ static void AsanInitInternal() {
   InitializeHighMemEnd();
 
 #if SANITIZER_WINDOWS64
-  InitialzeSEHonWindows64();
+  InitializeSEHonWindows64();
 #endif
 
   // Make sure we are not statically linked.
