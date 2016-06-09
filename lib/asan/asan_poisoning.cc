@@ -31,14 +31,21 @@ bool CanPoisonMemory() {
   return atomic_load(&can_poison_memory, memory_order_acquire);
 }
 
-void PoisonShadow(uptr addr, uptr size, u8 value) {
+__declspec(noinline) void PoisonShadow(uptr addr, uptr size, u8 value) {
   if (!CanPoisonMemory()) return;
   CHECK(AddrIsAlignedByGranularity(addr));
   CHECK(AddrIsInMem(addr));
   CHECK(AddrIsAlignedByGranularity(addr + size));
   CHECK(AddrIsInMem(addr + size - SHADOW_GRANULARITY));
   CHECK(REAL(memset));
+  volatile uptr a = addr;
+  volatile uptr b = size;
+  volatile u8 c = value;
+  if (!a && !b && !c) {
+    __debugbreak();
+  }
   FastPoisonShadow(addr, size, value);
+  __debugbreak();
 }
 
 void PoisonShadowPartialRightRedzone(uptr addr,

@@ -322,6 +322,28 @@ bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
          (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end;
 }
 
+bool MemoryRangeIsAvailable_dbg1(uptr range_start, uptr range_end) {
+  MEMORY_BASIC_INFORMATION mbi;
+  CHECK(VirtualQuery((void *)range_start, &mbi, sizeof(mbi)));
+  bool ret = (mbi.Protect == PAGE_NOACCESS &&
+      (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end);
+  __debugbreak();
+  return ret;
+}
+
+// rs = region size
+// ba = base address
+bool MemoryRangeIsAvailable_dbg2(uptr range_start, uptr range_end, uptr *p_ba, unsigned long long* p_rs) {
+  MEMORY_BASIC_INFORMATION mbi;
+  CHECK(VirtualQuery((void *)range_start, &mbi, sizeof(mbi)));
+  bool ret = (mbi.Protect == PAGE_NOACCESS &&
+      (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end);
+  *p_ba = (uptr)mbi.BaseAddress;
+  *p_rs = mbi.RegionSize;
+  //__debugbreak();
+  return ret;
+}
+
 void *MapFileToMemory(const char *file_name, uptr *buff_size) {
   UNIMPLEMENTED();
 }

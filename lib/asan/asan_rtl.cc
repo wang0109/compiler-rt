@@ -86,6 +86,7 @@ void ShowStatsAndAbort() {
 // Reserve memory range [beg, end].
 // We need to use inclusive range because end+1 may not be representable.
 void ReserveShadowMemoryRange(uptr beg, uptr end, const char *name) {
+	//TODO: use expection handerl to rewerite for win64
   CHECK_EQ((beg % GetMmapGranularity()), 0);
   CHECK_EQ(((end + 1) % GetMmapGranularity()), 0);
   uptr size = end - beg + 1;
@@ -94,6 +95,7 @@ void ReserveShadowMemoryRange(uptr beg, uptr end, const char *name) {
   if (res != (void*)beg) {
     Report("ReserveShadowMemoryRange failed while trying to map 0x%zx bytes. "
            "Perhaps you're using ulimit -v\n", size);
+    Report("Address of Beg: %llx\n", beg);
     Abort();
   }
   if (common_flags()->no_huge_pages_for_shadow)
@@ -326,6 +328,10 @@ static void InitializeHighMemEnd() {
 }
 
 static void ProtectGap(uptr addr, uptr size) {
+#ifdef _WIN64
+  return;
+#endif
+  //always not protect on win64
   if (!flags()->protect_shadow_gap)
     return;
   void *res = MmapFixedNoAccess(addr, size, "shadow gap");
@@ -424,6 +430,10 @@ static void AsanInitInternal() {
 
   InitializeHighMemEnd();
 
+#if SANITIZER_WINDOWS64
+  InitialzeSEHonWindows64();
+#endif
+
   // Make sure we are not statically linked.
   AsanDoesNotSupportStaticLinkage();
 
@@ -474,6 +484,9 @@ static void AsanInitInternal() {
 #endif
 
   if (Verbosity()) PrintAddressSpaceLayout();
+
+  // debug info
+   PrintAddressSpaceLayout();
 
   DisableCoreDumperIfNecessary();
 
