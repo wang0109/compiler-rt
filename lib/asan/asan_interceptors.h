@@ -109,6 +109,9 @@ DECLARE_REAL(int, sigaction, int signum, const struct sigaction *act,
 
 namespace __asan {
 
+// FIXME: Put this in a better place.
+void InitializeSEHonWindows64();
+
 void InitializeAsanInterceptors();
 void InitializePlatformInterceptors();
 
