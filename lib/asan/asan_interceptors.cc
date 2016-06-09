@@ -718,15 +718,6 @@ INTERCEPTOR(int, fork, void) {
 
 // ---------------------- InitializeAsanInterceptors ---------------- {{{1
 namespace __asan {
-  // TODO: Install SEH.
-  void InitializeSEHonWindows64() {
-    // Install our exception handler.
-    auto handler = AddVectoredExceptionHandler(TRUE, &ShadowExceptionHandler);
-    if (handler == NULL) {
-      // breka
-      __debugbreak();
-    }
-  }
 
 void InitializeAsanInterceptors() {
   static bool was_called_once;
