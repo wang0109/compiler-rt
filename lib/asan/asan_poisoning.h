@@ -61,8 +61,10 @@ ALWAYS_INLINE void FastPoisonShadow(uptr aligned_beg, uptr aligned_size,
       shadow_end - shadow_beg < common_flags()->clear_shadow_mmap_threshold) {
     // TODO: check with a loop read, just to verify that it was not
     // my stomping's fault
-    Debug_memset1(shadow_beg, shadow_end, value);
-    __debugbreak();
+    // FIXME: Remove all these debug things.
+    // Disable for now.
+    // Debug_memset1(shadow_beg, shadow_end, value);
+    // __debugbreak();
     REAL(memset)((void*)shadow_beg, value, shadow_end - shadow_beg);
   } else {
     uptr page_size = GetPageSizeCached();

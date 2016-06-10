@@ -41,11 +41,7 @@ __declspec(noinline) void PoisonShadow(uptr addr, uptr size, u8 value) {
   volatile uptr a = addr;
   volatile uptr b = size;
   volatile u8 c = value;
-  if (!a && !b && !c) {
-    __debugbreak();
-  }
   FastPoisonShadow(addr, size, value);
-  __debugbreak();
 }
 
 void PoisonShadowPartialRightRedzone(uptr addr,

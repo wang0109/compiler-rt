@@ -130,6 +130,7 @@ static  // Exception handler for dealing with shadow memory.
 }
 
 void InitializeSEHonWindows64() {
+  // Code path runs.
   // Install our exception handler.
   auto handler = AddVectoredExceptionHandler(TRUE, &ShadowExceptionHandler);
   if (handler == NULL) {
