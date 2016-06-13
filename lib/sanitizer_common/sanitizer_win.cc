@@ -259,6 +259,7 @@ void *MmapFixedNoReserve(uptr fixed_addr, uptr size, const char *name) {
 // Memory space mapped by 'MmapFixedOrDie' must have been reserved by
 // 'MmapFixedNoAccess'.
 void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
+#if SANITIZER_WINDOWS64
   void *p = VirtualAlloc((LPVOID)fixed_addr, size,
       MEM_COMMIT, PAGE_READWRITE);
   if (p == 0) {
