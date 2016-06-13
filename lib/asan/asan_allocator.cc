@@ -359,9 +359,10 @@ struct Allocator {
     if (size > kMaxAllowedMallocSize || needed_size > kMaxAllowedMallocSize) {
       Report("WARNING: AddressSanitizer failed to allocate 0x%zx bytes\n",
              (void*)size);
-	  // More verbose.
-	  Report("size: %llx, kMaxAllowedMallocSize: %llx, needed_size: %llx \n",
-		  size, kMaxAllowedMallocSize, needed_size);
+      // More verbose.
+      volatile unsigned long long iGrabYourAddr = (unsigned long long) (&kMaxAllowedMallocSize);
+      Report("size: %llx, kMaxAllowedMallocSize: %llx, needed_size: %llx, grabbed addr: %llx\n",
+        size, kMaxAllowedMallocSize, needed_size, iGrabYourAddr);
       return allocator.ReturnNullOrDie();
     }
 
