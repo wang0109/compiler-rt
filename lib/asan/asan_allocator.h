@@ -123,6 +123,7 @@ const uptr kAllocatorSize  =  0x20000000000ULL;  // 2T.
 const uptr kAllocatorSpace =  0x10000000000ULL;
 const uptr kAllocatorSize  =  0x10000000000ULL;  // 3T.
 # else
+// TODO: Check these values. Need to change it?
 const uptr kAllocatorSpace = 0x600000000000ULL;
 const uptr kAllocatorSize  =  0x40000000000ULL;  // 4T.
 # endif

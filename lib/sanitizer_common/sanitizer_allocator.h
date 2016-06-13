@@ -552,6 +552,8 @@ class SizeClassAllocator64 {
       while (end_idx + size > region->mapped_user + map_size)
         map_size += kUserMapSize;
       CHECK_GE(region->mapped_user + map_size, end_idx);
+      // Be verbose.
+      Printf("region_beg: %llx, SpaceBeg(): %llx, kRegionSize: %llx, class_id: %llx\n", region_beg, SpaceBeg(), kRegionSize, class_id);
       MapWithCallback(region_beg + region->mapped_user, map_size);
       stat->Add(AllocatorStatMapped, map_size);
       region->mapped_user += map_size;
