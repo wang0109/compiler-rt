@@ -26,6 +26,7 @@ bool CanPoisonMemory();
 // Poisons the shadow memory for "size" bytes starting from "addr".
 void PoisonShadow(uptr addr, uptr size, u8 value);
 
+#if SANITIZER_WINDOWS64
 __declspec(noinline) static void Debug_memset1(volatile uptr aa,
                                                volatile uptr bb,
                                                volatile u8 cc) {
@@ -35,6 +36,7 @@ __declspec(noinline) static void Debug_memset1(volatile uptr aa,
     *ii = cc;
   }
 }
+#endif
 
 // Poisons the shadow memory for "redzone_size" bytes starting from
 // "addr + size".

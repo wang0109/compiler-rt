@@ -718,7 +718,6 @@ INTERCEPTOR(int, fork, void) {
 
 // ---------------------- InitializeAsanInterceptors ---------------- {{{1
 namespace __asan {
-
 void InitializeAsanInterceptors() {
   static bool was_called_once;
   CHECK(was_called_once == false);
