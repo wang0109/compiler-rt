@@ -410,10 +410,9 @@ static void PrintAddressSpaceLayout() {
 static void AsanInitInternal() {
   // Put it up really early in the init.
   // FIXME: Proper select for OS.
-//#if SANITIZER_WINDOWS64
-  // Unconditionally init the hander.
+#if SANITIZER_WINDOWS64
   InitializeSEHonWindows64();
-//#endif
+#endif
   if (LIKELY(asan_inited)) return;
   SanitizerToolName = "AddressSanitizer";
   CHECK(!asan_init_is_running && "ASan init calls itself!");

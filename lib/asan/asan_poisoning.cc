@@ -31,7 +31,12 @@ bool CanPoisonMemory() {
   return atomic_load(&can_poison_memory, memory_order_acquire);
 }
 
+
+#if SANITIZER_WINDOWS64
 __declspec(noinline) void PoisonShadow(uptr addr, uptr size, u8 value) {
+#else
+void PoisonShadow(uptr addr, uptr size, u8 value) {
+#endif
   if (!CanPoisonMemory()) return;
   CHECK(AddrIsAlignedByGranularity(addr));
   CHECK(AddrIsInMem(addr));
