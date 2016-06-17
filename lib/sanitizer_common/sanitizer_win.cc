@@ -271,7 +271,12 @@ void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
       __debugbreak();
     }
     // Print one address first.
-    Report( "BaseAddress: %llx\n", (uptr)mbi.BaseAddress);
+    Report(
+        "BaseAddress: %llx\n, AllocationBase: %llx \n, AllocationProtect %llx, "
+        "RegionSize: %llx\n, State: %llx\n, Protect: %llx\n, Type: %llx\n ",
+        (uptr)mbi.BaseAddress, (uptr)mbi.AllocationBase,
+        (uptr)mbi.AllocationProtect, (uptr)mbi.RegionSize, (uptr)mbi.State,
+        (uptr)mbi.Protect, (uptr)mbi.Type );
 
     // FIXME
     __debugbreak();
