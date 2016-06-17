@@ -321,6 +321,8 @@ bool MprotectNoAccess(uptr addr, uptr size) {
   // FIXME: Trace how regions become NO ACCESS.
   Report("Settup NO ACCESS region at addr: %llx for size %llx\n", (uptr)addr,
          (uptr)size);
+  // FIXME:
+  __debugbreak();
   return VirtualProtect((LPVOID)addr, size, PAGE_NOACCESS, &old_protection);
 }
 
