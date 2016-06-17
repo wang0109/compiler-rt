@@ -266,7 +266,7 @@ void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
     // TODO: Query out a whole map.
 
     MEMORY_BASIC_INFORMATION mbi;
-    if (!VirtualQuery (addr, &mbi, sizeof(mbi)))
+    if (!VirtualQuery ((LPVOID)fixed_addr, &mbi, sizeof(mbi)))
     {
       __debugbreak();
     }
