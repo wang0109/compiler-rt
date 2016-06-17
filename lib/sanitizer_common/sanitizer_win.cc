@@ -318,6 +318,9 @@ void *MmapNoAccess(uptr size) {
 
 bool MprotectNoAccess(uptr addr, uptr size) {
   DWORD old_protection;
+  // FIXME: Trace how regions become NO ACCESS.
+  Report("Settup NO ACCESS region at addr: %llx for size %llx\n", (uptr)addr,
+         (uptr)size);
   return VirtualProtect((LPVOID)addr, size, PAGE_NOACCESS, &old_protection);
 }
 
