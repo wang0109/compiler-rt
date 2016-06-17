@@ -263,6 +263,20 @@ void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
   void *p = VirtualAlloc((LPVOID)fixed_addr, size,
       MEM_COMMIT, PAGE_READWRITE);
   if (p == 0) {
+    // TODO: Query out a whole map.
+
+    MEMORY_BASIC_INFORMATION mbi;
+    if (!VirtualQuery (addr, &mbi, sizeof(mbi)))
+    {
+      __debugbreak();
+    }
+    // Print one address first.
+    Report( "BaseAddress: %llx\n", (uptr)mbi.BaseAddress);
+
+    // FIXME
+    __debugbreak();
+
+    ///////////////////////////////
     char mem_type[30];
     internal_snprintf(mem_type, sizeof(mem_type), "memory at address 0x%zx",
                       fixed_addr);
