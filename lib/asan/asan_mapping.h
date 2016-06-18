@@ -128,7 +128,7 @@ static const u64 kDefaultShadowScale = 3;
 static const u64 kDefaultShadowOffset32 = 1ULL << 29;  // 0x20000000
 static const u64 kDefaultShadowOffset64 = 1ULL << 44;
 // FIXME: Test 2T again with the llvm side bug fixed.
-static const u64 kDefaultShort64bitShadowOffset = 0x200'0000'0000;  // 32T
+static const u64 kDefaultShort64bitShadowOffset = 0x20000000000;  // 2T
 static const u64 kIosShadowOffset32 = 1ULL << 30;  // 0x40000000
 static const u64 kIosShadowOffset64 = 0x120200000;
 static const u64 kIosSimShadowOffset32 = 1ULL << 30;
