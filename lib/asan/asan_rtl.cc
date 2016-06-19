@@ -470,6 +470,10 @@ static void AsanInitInternal() {
     shadow_start -= GetMmapGranularity();
   bool full_shadow_is_available =
       MemoryRangeIsAvailable(shadow_start, kHighShadowEnd);
+  // FIXME
+  Report("shadow_start: %llx, kHighShadowEnd: %llx \n", (uptr)shadow_start,
+         (uptr)kHighShadowEnd);
+  Report("full_shadow_is_available: %llx \n", (uptr) full_shadow_is_available );
 
 #if SANITIZER_LINUX && defined(__x86_64__) && defined(_LP64) &&                \
     !ASAN_FIXED_MAPPING
@@ -488,9 +492,12 @@ static void AsanInitInternal() {
   if (Verbosity()) PrintAddressSpaceLayout();
 
   // debug info
-   PrintAddressSpaceLayout();
+  PrintAddressSpaceLayout();
 
   DisableCoreDumperIfNecessary();
+
+  // FIXME
+  Report("kMidMemBeg is: %llx\n", (uptr)kMidMemBeg);
 
   if (full_shadow_is_available) {
     // mmap the low shadow plus at least one page at the left.
