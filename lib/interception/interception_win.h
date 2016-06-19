@@ -61,16 +61,23 @@ void TestOnlyReleaseTrampolineRegions();
 
 }  // namespace __interception
 
+// FIXME(wwchrome): Debug only.
 #if defined(INTERCEPTION_DYNAMIC_CRT)
-#define INTERCEPT_FUNCTION_WIN(func)                                           \
-  ::__interception::OverrideFunction(#func,                                    \
-                                     (::__interception::uptr)WRAP(func),       \
-                                     (::__interception::uptr *)&REAL(func))
+#define INTERCEPT_FUNCTION_WIN(func)                                          \
+  do {                                                                        \
+    Report("intercepting(win, dyn crt):" #func "\n");                         \
+    ::__interception::OverrideFunction(#func,                                 \
+                                       (::__interception::uptr)WRAP(func),    \
+                                       (::__interception::uptr *)&REAL(func)) \
+  } while (0)
 #else
-#define INTERCEPT_FUNCTION_WIN(func)                                           \
-  ::__interception::OverrideFunction((::__interception::uptr)func,             \
-                                     (::__interception::uptr)WRAP(func),       \
-                                     (::__interception::uptr *)&REAL(func))
+#define INTERCEPT_FUNCTION_WIN(func)                                          \
+  do {                                                                        \
+    Report("intercepting(win, non dyn crt):" #func "\n");                     \
+    ::__interception::OverrideFunction((::__interception::uptr)func,          \
+                                       (::__interception::uptr)WRAP(func),    \
+                                       (::__interception::uptr *)&REAL(func)) \
+  } while (0)
 #endif
 
 #define INTERCEPT_FUNCTION_VER_WIN(func, symver) INTERCEPT_FUNCTION_WIN(func)

@@ -104,6 +104,7 @@ struct sigaction *oldact)
   } while (0)
 #define ASAN_INTERCEPT_FUNC_VER(name, ver)                                     \
   do {                                                                         \
+    Report("intercepting(ver): '" #name "'\n" ); \
     if ((!INTERCEPT_FUNCTION_VER(name, ver) || !REAL(name)))                   \
       VReport(                                                                 \
           1, "AddressSanitizer: failed to intercept '" #name "@@" #ver "'\n"); \
