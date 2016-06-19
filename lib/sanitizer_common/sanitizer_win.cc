@@ -208,6 +208,8 @@ void *MmapAlignedOrDie(uptr size, uptr alignment, const char *mem_type) {
   for (; retries < kMaxRetries &&
          (mapped_addr == 0 || !IsAligned(mapped_addr, alignment));
        retries++) {
+    // FIXME(wwchrome): Debug only.
+    __debugbreak();
     // Overallocate size + alignment bytes.
     mapped_addr =
         (uptr)VirtualAlloc(0, size + alignment, MEM_RESERVE, PAGE_NOACCESS);
