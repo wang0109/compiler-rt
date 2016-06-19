@@ -65,7 +65,7 @@ void TestOnlyReleaseTrampolineRegions();
 #if defined(INTERCEPTION_DYNAMIC_CRT)
 #define INTERCEPT_FUNCTION_WIN(func)                                          \
   do {                                                                        \
-    ::__asan::Report("intercepting(win, dyn crt):" #func "\n");                         \
+    ::__sanitizer::Report("intercepting(win, dyn crt):" #func "\n");                         \
     ::__interception::OverrideFunction(#func,                                 \
                                        (::__interception::uptr)WRAP(func),    \
                                        (::__interception::uptr *)&REAL(func)) \
@@ -73,7 +73,7 @@ void TestOnlyReleaseTrampolineRegions();
 #else
 #define INTERCEPT_FUNCTION_WIN(func)                                          \
   do {                                                                        \
-    ::__asan::Report("intercepting(win, non dyn crt):" #func "\n");                     \
+    ::__sanitizer::Report("intercepting(win, non dyn crt):" #func "\n");                     \
     ::__interception::OverrideFunction((::__interception::uptr)func,          \
                                        (::__interception::uptr)WRAP(func),    \
                                        (::__interception::uptr *)&REAL(func)) \
