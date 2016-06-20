@@ -346,8 +346,24 @@ void DontDumpShadowMemory(uptr addr, uptr length) {
 bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
   MEMORY_BASIC_INFORMATION mbi;
   CHECK(VirtualQuery((void *)range_start, &mbi, sizeof(mbi)));
-  return mbi.Protect == PAGE_NOACCESS &&
-         (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end;
+
+  // Print one address first.
+  Report(
+      "In MemoryRangeIsAvailable, BaseAddress: %llx\n, AllocationBase: %llx \n, AllocationProtect %llx, "
+      "RegionSize: %llx\n, State: %llx\n, Protect: %llx\n, Type: %llx\n ",
+      (uptr)mbi.BaseAddress, (uptr)mbi.AllocationBase,
+      (uptr)mbi.AllocationProtect, (uptr)mbi.RegionSize, (uptr)mbi.State,
+      (uptr)mbi.Protect, (uptr)mbi.Type );
+
+  bool available = (mbi.Protect == PAGE_NOACCESS &&
+                   (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end);
+  if (!available) {
+    Report("range start and end:[ %llx, %llx ]\n", range_start, range_end );
+    Report("base+regionsize: %llx\n", (uptr)( (uptr)mbi.BaseAddress + mbi.RegionSize ));
+  }
+  return available;
+  /* return mbi.Protect == PAGE_NOACCESS && */
+  /*        (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end; */
 }
 
 bool MemoryRangeIsAvailable_dbg1(uptr range_start, uptr range_end) {
