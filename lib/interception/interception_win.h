@@ -21,6 +21,13 @@
 #ifndef INTERCEPTION_WIN_H
 #define INTERCEPTION_WIN_H
 
+// FIXME(wwchrome): Debug only.
+// Forward declare.
+namespace __sanitizer {
+  void Report(const char *format, ...);
+}
+
+
 namespace __interception {
 // All the functions in the OverrideFunction() family return true on success,
 // false on failure (including "couldn't find the function").
@@ -64,13 +71,13 @@ void TestOnlyReleaseTrampolineRegions();
 // FIXME(wwchrome): Debug only.
 #if defined(INTERCEPTION_DYNAMIC_CRT)
 #define INTERCEPT_FUNCTION_WIN(func)                                      \
-  (::Report("intercepting(win, dyn crt):" #func "\n"),         \
+  (::__sanitizer::Report("intercepting(win, dyn crt):" #func "\n"),         \
    ::__interception::OverrideFunction(#func,                              \
                                       (::__interception::uptr)WRAP(func), \
                                       (::__interception::uptr *)&REAL(func)))
 #else
 #define INTERCEPT_FUNCTION_WIN(func)                                      \
-  (::Report("intercepting(win, non dyn crt):" #func "\n"),     \
+  (::__sanitizer::Report("intercepting(win, non dyn crt):" #func "\n"),     \
    ::__interception::OverrideFunction((::__interception::uptr)func,       \
                                       (::__interception::uptr)WRAP(func), \
                                       (::__interception::uptr *)&REAL(func)))
