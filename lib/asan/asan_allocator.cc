@@ -453,7 +453,12 @@ struct Allocator {
     if (using_primary_allocator) {
       CHECK(size);
       m->user_requested_size = size;
+#if SANITIZER_WINDOWS64
+      // FIXME(wwchrome): Debug only.
+      /* __debugbreak(); */
+#else
       CHECK(allocator.FromPrimary(allocated));
+#endif
     } else {
       CHECK(!allocator.FromPrimary(allocated));
       m->user_requested_size = SizeClassMap::kMaxSize;
