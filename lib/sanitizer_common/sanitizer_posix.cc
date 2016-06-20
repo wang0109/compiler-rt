@@ -291,7 +291,14 @@ bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
     if (start == end) continue;  // Empty range.
     CHECK_NE(0, end);
     if (!IntervalsAreSeparate(start, end - 1, range_start, range_end))
+    {
+      // FIXME(wwchrome): Debug only.
+      Report(
+          "Found conflict: [%llx, %llx] already there. Cannot map [%llx, "
+          "%llx]\n",
+          (uptr)start, (uptr)(end - 1), (uptr)range_start, (uptr)range_end);
       return false;
+    }
   }
   return true;
 }
