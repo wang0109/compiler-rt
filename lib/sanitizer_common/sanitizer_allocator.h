@@ -1254,6 +1254,8 @@ class LargeMmapAllocator {
   };
 
   Header *GetHeader(uptr p) {
+    // FIXME(wwchrome): Debug only.
+    __debugbreak();
     CHECK(IsAligned(p, page_size_));
     return reinterpret_cast<Header*>(p - page_size_);
   }
