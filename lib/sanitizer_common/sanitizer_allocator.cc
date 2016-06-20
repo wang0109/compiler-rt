@@ -67,6 +67,8 @@ InternalAllocator *internal_allocator() {
 
 #else  // defined(SANITIZER_GO) || defined(SANITIZER_USE_MALLOC)
 
+// FIXME: Disable the allocator, by put invalid code..
+=================
 static ALIGNED(64) char internal_alloc_placeholder[sizeof(InternalAllocator)];
 static atomic_uint8_t internal_allocator_initialized;
 static StaticSpinMutex internal_alloc_init_mu;
