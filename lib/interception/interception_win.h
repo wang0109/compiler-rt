@@ -64,13 +64,13 @@ void TestOnlyReleaseTrampolineRegions();
 // FIXME(wwchrome): Debug only.
 #if defined(INTERCEPTION_DYNAMIC_CRT)
 #define INTERCEPT_FUNCTION_WIN(func)                                      \
-  (__sanitizer::Report("intercepting(win, dyn crt):" #func "\n"),         \
+  (::__sanitizer::Report("intercepting(win, dyn crt):" #func "\n"),         \
    ::__interception::OverrideFunction(#func,                              \
                                       (::__interception::uptr)WRAP(func), \
                                       (::__interception::uptr *)&REAL(func)))
 #else
 #define INTERCEPT_FUNCTION_WIN(func)                                      \
-  (__sanitizer::Report("intercepting(win, non dyn crt):" #func "\n"),     \
+  (::__sanitizer::Report("intercepting(win, non dyn crt):" #func "\n"),     \
    ::__interception::OverrideFunction((::__interception::uptr)func,       \
                                       (::__interception::uptr)WRAP(func), \
                                       (::__interception::uptr *)&REAL(func)))
