@@ -404,6 +404,8 @@ struct Allocator {
           allocator.Allocate(cache, needed_size, 8, false, check_rss_limit);
 #endif
     } else {
+      // FIXME(wwchrome): Debug only.
+      __debugbreak();
       SpinMutexLock l(&fallback_mutex);
       AllocatorCache *cache = &fallback_allocator_cache;
       allocated =
