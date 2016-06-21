@@ -70,6 +70,73 @@ uptr GetThreadSelf() {
   return GetTid();
 }
 
+static SIZE_T page_size = 0;
+static SIZE_T alloc_granularity = 0;
+
+static // Exception handler for dealing with shadow memory.
+LONG CALLBACK ShadowExceptionHandler(PEXCEPTION_POINTERS exception_pointers) {
+  // One-time init.
+  if (page_size == 0) {
+    SYSTEM_INFO system_info = {};
+    ::GetSystemInfo(&system_info);
+    page_size = system_info.dwPageSize;
+    alloc_granularity = system_info.dwAllocationGranularity;
+  }
+  // Only handle access violations.
+  if (exception_pointers->ExceptionRecord->ExceptionCode !=
+      EXCEPTION_ACCESS_VIOLATION) {
+    return EXCEPTION_CONTINUE_SEARCH;
+  }
+
+  // Only handle access violations that land within the shadow memory.
+  LPVOID addr = reinterpret_cast<LPVOID>(
+      exception_pointers->ExceptionRecord->ExceptionInformation[1]);
+
+  // FIXME: Proper check range.
+  //if (addr < ShadowBeg() || addr >= ShadowEnd() )
+   // return EXCEPTION_CONTINUE_SEARCH;
+
+  // This is an access violation while trying to read from the shadow. Commit
+  // the relevant page and let execution continue.
+
+  // Determine the address of the page that is being accessed.
+  LPVOID page = reinterpret_cast<LPVOID>(
+      reinterpret_cast<uintptr_t>(addr) & ~(page_size - 1));
+
+  // Query the existing page.
+  MEMORY_BASIC_INFORMATION mem_info = {};
+  if (::VirtualQuery(page, &mem_info, sizeof(mem_info)) == 0)
+    return EXCEPTION_CONTINUE_SEARCH;
+
+  // If the memory isn't part of any reservation, then reserve the chunk of
+  // pages.
+  if (mem_info.AllocationBase == 0) {
+    LPVOID chunk = reinterpret_cast<LPVOID>(
+        reinterpret_cast<uintptr_t>(addr) & ~(alloc_granularity - 1));
+    auto result = ::VirtualAlloc(chunk, alloc_granularity, MEM_RESERVE,
+        PAGE_READONLY);
+    if (result != chunk)
+      return EXCEPTION_CONTINUE_SEARCH;
+  }
+
+  // Commit the page.
+  auto result = ::VirtualAlloc(page, page_size, MEM_COMMIT, PAGE_READWRITE);
+  if (result != page)
+    return EXCEPTION_CONTINUE_SEARCH;
+
+  // The page mapping succeeded, so continue execution as usual.
+  return EXCEPTION_CONTINUE_EXECUTION;
+}
+
+void InitializeSEHonWindows64() {
+  // Code path runs.
+  // Install our exception handler.
+  auto handler = AddVectoredExceptionHandler(TRUE, &ShadowExceptionHandler);
+  if (handler == NULL) {
+    __debugbreak();
+  }
+}
+
 #if !SANITIZER_GO
 void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
                                 uptr *stack_bottom) {
@@ -172,8 +239,13 @@ void *MmapFixedNoReserve(uptr fixed_addr, uptr size, const char *name) {
   // FIXME: is this really "NoReserve"? On Win32 this does not matter much,
   // but on Win64 it does.
   (void)name; // unsupported
+#if SANITIZER_WINDOWS64
+  void *p = VirtualAlloc((LPVOID)fixed_addr, size,
+      MEM_RESERVE, PAGE_READWRITE);
+#else
   void *p = VirtualAlloc((LPVOID)fixed_addr, size,
       MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+#endif
   if (p == 0)
     Report("ERROR: %s failed to "
            "allocate %p (%zd) bytes at %p (error code: %d)\n",
@@ -200,8 +272,13 @@ void *MmapNoReserveOrDie(uptr size, const char *mem_type) {
 
 void *MmapFixedNoAccess(uptr fixed_addr, uptr size, const char *name) {
   (void)name; // unsupported
+#if SANITIZER_WINDOWS64
+  void *res = VirtualAlloc((LPVOID)fixed_addr, size,
+                           MEM_RESERVE, PAGE_NOACCESS);
+#else
   void *res = VirtualAlloc((LPVOID)fixed_addr, size,
                            MEM_RESERVE | MEM_COMMIT, PAGE_NOACCESS);
+#endif
   if (res == 0)
     Report("WARNING: %s failed to "
            "mprotect %p (%zd) bytes at %p (error code: %d)\n",

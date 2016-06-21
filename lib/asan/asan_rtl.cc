@@ -402,6 +402,9 @@ static void PrintAddressSpaceLayout() {
 }
 
 static void AsanInitInternal() {
+#if SANITIZER_WINDOWS64
+  InitializeSEHonWindows64();
+#endif
   if (LIKELY(asan_inited)) return;
   SanitizerToolName = "AddressSanitizer";
   CHECK(!asan_init_is_running && "ASan init calls itself!");

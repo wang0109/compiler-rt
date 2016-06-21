@@ -316,6 +316,9 @@ void CovAfterFork(int child_pid);
 void InitializeCoverage(bool enabled, const char *coverage_dir);
 void ReInitializeCoverage(bool enabled, const char *coverage_dir);
 
+// TODO(wwchrome): Put this in a better place.
+void InitializeSEHonWindows64();
+
 void InitTlsSize();
 uptr GetTlsSize();
 
