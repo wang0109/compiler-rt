@@ -86,6 +86,7 @@ void ShowStatsAndAbort() {
 // Reserve memory range [beg, end].
 // We need to use inclusive range because end+1 may not be representable.
 void ReserveShadowMemoryRange(uptr beg, uptr end, const char *name) {
+	//TODO: use expection handerl to rewerite for win64
   CHECK_EQ((beg % GetMmapGranularity()), 0);
   CHECK_EQ(((end + 1) % GetMmapGranularity()), 0);
   uptr size = end - beg + 1;
@@ -94,6 +95,7 @@ void ReserveShadowMemoryRange(uptr beg, uptr end, const char *name) {
   if (res != (void*)beg) {
     Report("ReserveShadowMemoryRange failed while trying to map 0x%zx bytes. "
            "Perhaps you're using ulimit -v\n", size);
+    Report("Address of Beg: %llx\n", beg);
     Abort();
   }
   if (common_flags()->no_huge_pages_for_shadow)
@@ -326,6 +328,10 @@ static void InitializeHighMemEnd() {
 }
 
 static void ProtectGap(uptr addr, uptr size) {
+#ifdef _WIN64
+  return;
+#endif
+  //always not protect on win64
   if (!flags()->protect_shadow_gap)
     return;
   void *res = MmapFixedNoAccess(addr, size, "shadow gap");
@@ -402,6 +408,11 @@ static void PrintAddressSpaceLayout() {
 }
 
 static void AsanInitInternal() {
+  // Put it up really early in the init.
+  // FIXME: Proper select for OS.
+#if SANITIZER_WINDOWS64
+  InitializeSEHonWindows64();
+#endif
   if (LIKELY(asan_inited)) return;
   SanitizerToolName = "AddressSanitizer";
   CHECK(!asan_init_is_running && "ASan init calls itself!");
@@ -420,7 +431,12 @@ static void AsanInitInternal() {
   SetCanPoisonMemory(flags()->poison_heap);
   SetMallocContextSize(common_flags()->malloc_context_size);
 
+#if SANITIZER_WINDOWS64
+  InitializeSEHonWindows64();
+#endif
+
   InitializeHighMemEnd();
+
 
   // Make sure we are not statically linked.
   AsanDoesNotSupportStaticLinkage();
@@ -456,6 +472,10 @@ static void AsanInitInternal() {
     shadow_start -= GetMmapGranularity();
   bool full_shadow_is_available =
       MemoryRangeIsAvailable(shadow_start, kHighShadowEnd);
+  // FIXME
+  Report("shadow_start: %llx, kHighShadowEnd: %llx \n", (uptr)shadow_start,
+         (uptr)kHighShadowEnd);
+  Report("full_shadow_is_available: %llx \n", (uptr) full_shadow_is_available );
 
 #if SANITIZER_LINUX && defined(__x86_64__) && defined(_LP64) &&                \
     !ASAN_FIXED_MAPPING
@@ -473,7 +493,13 @@ static void AsanInitInternal() {
 
   if (Verbosity()) PrintAddressSpaceLayout();
 
+  // debug info
+  PrintAddressSpaceLayout();
+
   DisableCoreDumperIfNecessary();
+
+  // FIXME
+  Report("kMidMemBeg is: %llx\n", (uptr)kMidMemBeg);
 
   if (full_shadow_is_available) {
     // mmap the low shadow plus at least one page at the left.

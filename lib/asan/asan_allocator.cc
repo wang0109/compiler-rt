@@ -28,6 +28,9 @@
 #include "sanitizer_common/sanitizer_stackdepot.h"
 #include "sanitizer_common/sanitizer_quarantine.h"
 #include "lsan/lsan_common.h"
+#if SANITIZER_WINDOWS64
+#include <Windows.h>
+#endif
 
 namespace __asan {
 
@@ -356,17 +359,53 @@ struct Allocator {
     if (size > kMaxAllowedMallocSize || needed_size > kMaxAllowedMallocSize) {
       Report("WARNING: AddressSanitizer failed to allocate 0x%zx bytes\n",
              (void*)size);
+#if SANITIZER_WINDOWS64
+      // Why is it zero?
+      Report("kMaxAllowedMallocSize: %llx, size of uptr: %d\n", kMaxAllowedMallocSize, sizeof(uptr));
+      // Recreate the crime scene.
+      const uptr amIZero1 =
+        FIRST_32_SECOND_64(3UL << 30, 1UL << 40);
+
+      const uptr amIZero2 =
+        FIRST_32_SECOND_64(3UL << 30, 1ULL << 40);  // Extra "L".
+
+      Report("am i zero 1: %llx, am i zero 2: %llx\n", amIZero1, amIZero2);
+
+      // More verbose.
+      volatile unsigned long long iGrabYourAddr = (unsigned long long) (&kMaxAllowedMallocSize);
+      Report("size: %llx, kMaxAllowedMallocSize: %llx, needed_size: %llx, grabbed addr: %llx\n",
+        size, kMaxAllowedMallocSize, needed_size, iGrabYourAddr);
+#endif
       return allocator.ReturnNullOrDie();
     }
 
     AsanThread *t = GetCurrentThread();
     void *allocated;
     bool check_rss_limit = true;
+#if SANITIZER_WINDOWS64
+    static HANDLE myHeap = NULL;
+    if (myHeap == NULL) {
+      myHeap = HeapCreate(HEAP_CREATE_ENABLE_EXECUTE, (SIZE_T) 0x1000000, (SIZE_T) 0x10000000);
+      if (myHeap == NULL) {
+        // FIXME(wwchrome): Debug only.
+        __debugbreak();
+      }
+    }
+#endif
     if (t) {
       AllocatorCache *cache = GetAllocatorCache(&t->malloc_storage());
+      // FIXME(wwchrome): Debug only.
+      // Use original malloc, or.. use heap alloc ?
+#if SANITIZER_WINDOWS64
+      LPVOID alloc_win = HeapAlloc(myHeap, HEAP_ZERO_MEMORY, needed_size );
+      allocated = (void*) alloc_win;
+#else
       allocated =
           allocator.Allocate(cache, needed_size, 8, false, check_rss_limit);
+#endif
     } else {
+      // FIXME(wwchrome): Debug only.
+      __debugbreak();
       SpinMutexLock l(&fallback_mutex);
       AllocatorCache *cache = &fallback_allocator_cache;
       allocated =
@@ -381,7 +420,11 @@ struct Allocator {
       // chunk. This is possible if CanPoisonMemory() was false for some
       // time, for example, due to flags()->start_disabled.
       // Anyway, poison the block before using it for anything else.
+#if SANITIZER_WINDOWS64
+      uptr allocated_size = HeapSize(myHeap, 0, allocated);
+#else
       uptr allocated_size = allocator.GetActuallyAllocatedSize(allocated);
+#endif
       PoisonShadow((uptr)allocated, allocated_size, kAsanHeapLeftRedzoneMagic);
     }
 
@@ -410,7 +453,12 @@ struct Allocator {
     if (using_primary_allocator) {
       CHECK(size);
       m->user_requested_size = size;
+#if SANITIZER_WINDOWS64
+      // FIXME(wwchrome): Debug only.
+      /* __debugbreak(); */
+#else
       CHECK(allocator.FromPrimary(allocated));
+#endif
     } else {
       CHECK(!allocator.FromPrimary(allocated));
       m->user_requested_size = SizeClassMap::kMaxSize;

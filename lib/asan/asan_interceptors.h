@@ -88,16 +88,23 @@ DECLARE_REAL(uptr, strnlen, const char *s, uptr maxlen)
 DECLARE_REAL(char*, strstr, const char *s1, const char *s2)
 struct sigaction;
 DECLARE_REAL(int, sigaction, int signum, const struct sigaction *act,
-                             struct sigaction *oldact)
+struct sigaction *oldact)
 
+// FIXME: Temporarily verbose print out interception.
 #if !SANITIZER_MAC
 #define ASAN_INTERCEPT_FUNC(name)                                        \
   do {                                                                   \
-    if ((!INTERCEPT_FUNCTION(name) || !REAL(name)))                      \
-      VReport(1, "AddressSanitizer: failed to intercept '" #name "'\n"); \
+    Report("intercepting: '" #name "'\n" ); \
+    if ((!INTERCEPT_FUNCTION(name) || !REAL(name))) {                     \
+      VReport(1, "AddressSanitizer: failed to intercept '" #name "'\n");  \
+    } \
+    else { \
+      VReport(1, "AddressSanitizer: intercepted just fine '" #name "'\n"); \
+    } \
   } while (0)
 #define ASAN_INTERCEPT_FUNC_VER(name, ver)                                     \
   do {                                                                         \
+    Report("intercepting(ver): '" #name "'\n" ); \
     if ((!INTERCEPT_FUNCTION_VER(name, ver) || !REAL(name)))                   \
       VReport(                                                                 \
           1, "AddressSanitizer: failed to intercept '" #name "@@" #ver "'\n"); \

@@ -70,6 +70,74 @@ uptr GetThreadSelf() {
   return GetTid();
 }
 
+static SIZE_T page_size = 0;
+static SIZE_T alloc_granularity = 0;
+
+static  // Exception handler for dealing with shadow memory.
+    LONG CALLBACK
+    ShadowExceptionHandler(PEXCEPTION_POINTERS exception_pointers) {
+  // One-time init.
+  if (page_size == 0) {
+    SYSTEM_INFO system_info = {};
+    ::GetSystemInfo(&system_info);
+    page_size = system_info.dwPageSize;
+    alloc_granularity = system_info.dwAllocationGranularity;
+  }
+  // Only handle access violations.
+  if (exception_pointers->ExceptionRecord->ExceptionCode !=
+      EXCEPTION_ACCESS_VIOLATION) {
+    return EXCEPTION_CONTINUE_SEARCH;
+  }
+
+  // Only handle access violations that land within the shadow memory.
+  LPVOID addr = reinterpret_cast<LPVOID>(
+      exception_pointers->ExceptionRecord->ExceptionInformation[1]);
+
+  // Check valid shadow range.
+  if (addr < kLowShadowBeg ||
+      (addr >= kLowShadowEnd && addr < kHighShadowBeg) ||
+      addr >= kHighShadowEng)
+    return EXCEPTION_CONTINUE_SEARCH;
+
+  // This is an access violation while trying to read from the shadow. Commit
+  // the relevant page and let execution continue.
+
+  // Determine the address of the page that is being accessed.
+  LPVOID page = reinterpret_cast<LPVOID>(reinterpret_cast<uintptr_t>(addr) &
+                                         ~(page_size - 1));
+
+  // Query the existing page.
+  MEMORY_BASIC_INFORMATION mem_info = {};
+  if (::VirtualQuery(page, &mem_info, sizeof(mem_info)) == 0)
+    return EXCEPTION_CONTINUE_SEARCH;
+
+  // If the memory isn't part of any reservation, then reserve the chunk of
+  // pages.
+  if (mem_info.AllocationBase == 0) {
+    LPVOID chunk = reinterpret_cast<LPVOID>(reinterpret_cast<uintptr_t>(addr) &
+                                            ~(alloc_granularity - 1));
+    auto result =
+        ::VirtualAlloc(chunk, alloc_granularity, MEM_RESERVE, PAGE_READONLY);
+    if (result != chunk) return EXCEPTION_CONTINUE_SEARCH;
+  }
+
+  // Commit the page.
+  auto result = ::VirtualAlloc(page, page_size, MEM_COMMIT, PAGE_READWRITE);
+  if (result != page) return EXCEPTION_CONTINUE_SEARCH;
+
+  // The page mapping succeeded, so continue execution as usual.
+  return EXCEPTION_CONTINUE_EXECUTION;
+}
+
+void InitializeSEHonWindows64() {
+  // Code path runs.
+  // Install our exception handler.
+  auto handler = AddVectoredExceptionHandler(TRUE, &ShadowExceptionHandler);
+  if (handler == NULL) {
+    __debugbreak();
+  }
+}
+
 #if !SANITIZER_GO
 void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
                                 uptr *stack_bottom) {
@@ -140,6 +208,8 @@ void *MmapAlignedOrDie(uptr size, uptr alignment, const char *mem_type) {
   for (; retries < kMaxRetries &&
          (mapped_addr == 0 || !IsAligned(mapped_addr, alignment));
        retries++) {
+    // FIXME(wwchrome): Debug only.
+    __debugbreak();
     // Overallocate size + alignment bytes.
     mapped_addr =
         (uptr)VirtualAlloc(0, size + alignment, MEM_RESERVE, PAGE_NOACCESS);
@@ -172,8 +242,13 @@ void *MmapFixedNoReserve(uptr fixed_addr, uptr size, const char *name) {
   // FIXME: is this really "NoReserve"? On Win32 this does not matter much,
   // but on Win64 it does.
   (void)name; // unsupported
+#if SANITIZER_WINDOWS64
+  void *p = VirtualAlloc((LPVOID)fixed_addr, size,
+      MEM_RESERVE, PAGE_READWRITE);
+#else
   void *p = VirtualAlloc((LPVOID)fixed_addr, size,
       MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+#endif
   if (p == 0)
     Report("ERROR: %s failed to "
            "allocate %p (%zd) bytes at %p (error code: %d)\n",
@@ -182,9 +257,34 @@ void *MmapFixedNoReserve(uptr fixed_addr, uptr size, const char *name) {
 }
 
 void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
+#if SANITIZER_WINDOWS64
+  // FIXME: looks like here must use COMMIT.
   void *p = VirtualAlloc((LPVOID)fixed_addr, size,
       MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+#else
+  void *p = VirtualAlloc((LPVOID)fixed_addr, size,
+    MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+#endif
   if (p == 0) {
+    // TODO: Query out a whole map.
+
+    MEMORY_BASIC_INFORMATION mbi;
+    if (!VirtualQuery ((LPVOID)fixed_addr, &mbi, sizeof(mbi)))
+    {
+      __debugbreak();
+    }
+    // Print one address first.
+    Report(
+        "BaseAddress: %llx\n, AllocationBase: %llx \n, AllocationProtect %llx, "
+        "RegionSize: %llx\n, State: %llx\n, Protect: %llx\n, Type: %llx\n ",
+        (uptr)mbi.BaseAddress, (uptr)mbi.AllocationBase,
+        (uptr)mbi.AllocationProtect, (uptr)mbi.RegionSize, (uptr)mbi.State,
+        (uptr)mbi.Protect, (uptr)mbi.Type );
+
+    // FIXME
+    __debugbreak();
+
+    ///////////////////////////////
     char mem_type[30];
     internal_snprintf(mem_type, sizeof(mem_type), "memory at address 0x%zx",
                       fixed_addr);
@@ -200,8 +300,13 @@ void *MmapNoReserveOrDie(uptr size, const char *mem_type) {
 
 void *MmapFixedNoAccess(uptr fixed_addr, uptr size, const char *name) {
   (void)name; // unsupported
+#if SANITIZER_WINDOWS64
+  void *res = VirtualAlloc((LPVOID)fixed_addr, size,
+                           MEM_RESERVE, PAGE_NOACCESS);
+#else
   void *res = VirtualAlloc((LPVOID)fixed_addr, size,
                            MEM_RESERVE | MEM_COMMIT, PAGE_NOACCESS);
+#endif
   if (res == 0)
     Report("WARNING: %s failed to "
            "mprotect %p (%zd) bytes at %p (error code: %d)\n",
@@ -216,6 +321,11 @@ void *MmapNoAccess(uptr size) {
 
 bool MprotectNoAccess(uptr addr, uptr size) {
   DWORD old_protection;
+  // FIXME: Trace how regions become NO ACCESS.
+  Report("Settup NO ACCESS region at addr: %llx for size %llx\n", (uptr)addr,
+         (uptr)size);
+  // FIXME:
+  __debugbreak();
   return VirtualProtect((LPVOID)addr, size, PAGE_NOACCESS, &old_protection);
 }
 
@@ -237,8 +347,46 @@ void DontDumpShadowMemory(uptr addr, uptr length) {
 bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
   MEMORY_BASIC_INFORMATION mbi;
   CHECK(VirtualQuery((void *)range_start, &mbi, sizeof(mbi)));
-  return mbi.Protect == PAGE_NOACCESS &&
-         (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end;
+
+  // Print one address first.
+  Report(
+      "In MemoryRangeIsAvailable, BaseAddress: %llx\n, AllocationBase: %llx \n, AllocationProtect %llx, "
+      "RegionSize: %llx\n, State: %llx\n, Protect: %llx\n, Type: %llx\n ",
+      (uptr)mbi.BaseAddress, (uptr)mbi.AllocationBase,
+      (uptr)mbi.AllocationProtect, (uptr)mbi.RegionSize, (uptr)mbi.State,
+      (uptr)mbi.Protect, (uptr)mbi.Type );
+
+  bool available = (mbi.Protect == PAGE_NOACCESS &&
+                   (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end);
+  if (!available) {
+    Report("range start and end:[ %llx, %llx ]\n", range_start, range_end );
+    Report("base+regionsize: %llx\n", (uptr)( (uptr)mbi.BaseAddress + mbi.RegionSize ));
+  }
+  return available;
+  /* return mbi.Protect == PAGE_NOACCESS && */
+  /*        (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end; */
+}
+
+bool MemoryRangeIsAvailable_dbg1(uptr range_start, uptr range_end) {
+  MEMORY_BASIC_INFORMATION mbi;
+  CHECK(VirtualQuery((void *)range_start, &mbi, sizeof(mbi)));
+  bool ret = (mbi.Protect == PAGE_NOACCESS &&
+      (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end);
+  __debugbreak();
+  return ret;
+}
+
+// rs = region size
+// ba = base address
+bool MemoryRangeIsAvailable_dbg2(uptr range_start, uptr range_end, uptr *p_ba, unsigned long long* p_rs) {
+  MEMORY_BASIC_INFORMATION mbi;
+  CHECK(VirtualQuery((void *)range_start, &mbi, sizeof(mbi)));
+  bool ret = (mbi.Protect == PAGE_NOACCESS &&
+      (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end);
+  *p_ba = (uptr)mbi.BaseAddress;
+  *p_rs = mbi.RegionSize;
+  //__debugbreak();
+  return ret;
 }
 
 void *MapFileToMemory(const char *file_name, uptr *buff_size) {
