@@ -209,8 +209,13 @@ void *MmapNoReserveOrDie(uptr size, const char *mem_type) {
 
 void *MmapFixedNoAccess(uptr fixed_addr, uptr size, const char *name) {
   (void)name; // unsupported
+#if SANITIZER_WINDOWS64
   void *res = VirtualAlloc((LPVOID)fixed_addr, size,
                            MEM_RESERVE, PAGE_NOACCESS);
+#else
+  void *res = VirtualAlloc((LPVOID)fixed_addr, size,
+                           MEM_RESERVE | MEM_COMMIT, PAGE_NOACCESS);
+#endif
   if (res == 0)
     Report("WARNING: %s failed to "
            "mprotect %p (%zd) bytes at %p (error code: %d)\n",
