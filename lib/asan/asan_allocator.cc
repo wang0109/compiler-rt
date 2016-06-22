@@ -28,6 +28,9 @@
 #include "sanitizer_common/sanitizer_stackdepot.h"
 #include "sanitizer_common/sanitizer_quarantine.h"
 #include "lsan/lsan_common.h"
+#if SANITIZER_WINDOWS64
+#include <Windows.h>
+#endif
 
 namespace __asan {
 
@@ -362,10 +365,27 @@ struct Allocator {
     AsanThread *t = GetCurrentThread();
     void *allocated;
     bool check_rss_limit = true;
+#if SANITIZER_WINDOWS64
+    static HANDLE myHeap = NULL;
+    if (myHeap == NULL) {
+      myHeap = HeapCreate(HEAP_CREATE_ENABLE_EXECUTE, (SIZE_T) 0x1000000, (SIZE_T) 0x10000000);
+      if (myHeap == NULL) {
+        // FIXME(wwchrome): Debug only.
+        __debugbreak();
+      }
+    }
+#endif
     if (t) {
       AllocatorCache *cache = GetAllocatorCache(&t->malloc_storage());
+      // FIXME(wwchrome): Debug only.
+      // Use original malloc, or.. use heap alloc ?
+#if SANITIZER_WINDOWS64
+      LPVOID alloc_win = HeapAlloc(myHeap, HEAP_ZERO_MEMORY, needed_size );
+      allocated = (void*) alloc_win;
+#else
       allocated =
           allocator.Allocate(cache, needed_size, 8, false, check_rss_limit);
+#endif
     } else {
       SpinMutexLock l(&fallback_mutex);
       AllocatorCache *cache = &fallback_allocator_cache;
@@ -381,7 +401,11 @@ struct Allocator {
       // chunk. This is possible if CanPoisonMemory() was false for some
       // time, for example, due to flags()->start_disabled.
       // Anyway, poison the block before using it for anything else.
+#if SANITIZER_WINDOWS64
+      uptr allocated_size = HeapSize(myHeap, 0, allocated);
+#else
       uptr allocated_size = allocator.GetActuallyAllocatedSize(allocated);
+#endif
       PoisonShadow((uptr)allocated, allocated_size, kAsanHeapLeftRedzoneMagic);
     }
 
