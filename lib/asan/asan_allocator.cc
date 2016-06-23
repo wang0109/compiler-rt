@@ -762,7 +762,7 @@ void InitializeAllocator(const AllocatorOptions &options) {
   /* volatile char* tn = (char*)typeid(instance).name(); */
   // FIXME(wwchrome): Debug only.
   constexpr auto n = type_name<AllocatorOptions>();
-  volatile const char* x = n.data();
+  volatile const char* x = n.d();
   volatile char* y = 0;
 
   if (x != 0) {
