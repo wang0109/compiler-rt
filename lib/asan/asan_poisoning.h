@@ -54,14 +54,14 @@ static void dump_virtualquery() {
     }
     Report("====================================\n");
     // Print one address first.
-    Report(
-        "BaseAddress: %llx\n, AllocationBase: %llx \n, AllocationProtect %llx, "
-        "RegionSize: %llx\n, State: %llx\n, Protect: %llx\n, Type: %llx\n ",
-        (uptr)mbi.BaseAddress, (uptr)mbi.AllocationBase,
-        (uptr)mbi.AllocationProtect, (uptr)mbi.RegionSize, (uptr)mbi.State,
-        (uptr)mbi.Protect, (uptr)mbi.Type );
+    /* Report( */
+    /*     "BaseAddress: %llx\n, AllocationBase: %llx \n, AllocationProtect %llx, " */
+    /*     "RegionSize: %llx\n, State: %llx\n, Protect: %llx\n, Type: %llx\n ", */
+    /*     (uptr)mbi.BaseAddress, (uptr)mbi.AllocationBase, */
+    /*     (uptr)mbi.AllocationProtect, (uptr)mbi.RegionSize, (uptr)mbi.State, */
+    /*     (uptr)mbi.Protect, (uptr)mbi.Type ); */
 
-    addr += (uptr)mbi.RegionSize;
+    /* addr += (uptr)mbi.RegionSize; */
   }
 
 }
