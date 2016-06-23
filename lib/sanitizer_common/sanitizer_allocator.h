@@ -332,6 +332,9 @@ class SizeClassAllocator64 {
           reinterpret_cast<uptr>(MmapNoAccess(TotalSpaceSize));
       CHECK_NE(NonConstSpaceBeg, ~(uptr)0);
     }
+    // FIXME(wwchrome): Debug only.
+    uptr x = SpaceEnd();
+    Report("space end is: %llx\n", x);
     MapWithCallback(SpaceEnd(), AdditionalSize());
   }
 
