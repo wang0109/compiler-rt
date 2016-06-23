@@ -1309,7 +1309,6 @@ class CombinedAllocator {
  public:
   void InitCommon(bool may_return_null) {
     // FIXME(wwchrome).
-    static_assert(decltype(primary_)::dummy,"DUMP");
     primary_.Init();
     atomic_store(&may_return_null_, may_return_null, memory_order_relaxed);
   }
