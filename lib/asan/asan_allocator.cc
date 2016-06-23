@@ -760,16 +760,16 @@ void InitializeAllocator(const AllocatorOptions &options) {
   /* char[100] x = {}; */
   // only include typeinfo will trigger Asan init calls itself?
   /* volatile char* tn = (char*)typeid(instance).name(); */
-  static_assert(decltype(instance)::dummy,"DUMP");
+  /* static_assert(decltype(instance)::dummy,"DUMP"); */
   // FIXME(wwchrome): Debug only.
   constexpr auto n = type_name<AllocatorOptions>();
   volatile const char* x = n.d();
   volatile char* y = 0;
-  /* int ZLEN = n.s(); */
+  int ZLEN = n.s();
 
-  if (x != 0) {
-#define ZLEN 75
-    char z [ZLEN] = {};
+  if (x != 0 && ZLEN > -1) {
+/* #define ZLEN 75 */
+    char z [78] = {};
     int i;
     for (i = 0; i < ZLEN; ++i) {
       z[i] = x[i];
