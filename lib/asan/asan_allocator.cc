@@ -761,6 +761,11 @@ void InitializeAllocator(const AllocatorOptions &options) {
   // FIXME(wwchrome): Debug only.
   constexpr auto n = type_name<int>();
   volatile const char* x = n;
+
+  if (x != 0) {
+    // FIXME(wwchrome): Debug only.
+    __debugbreak();
+  }
   /* volatile char* x = n; */
   __debugbreak();
   instance.Initialize(options);
