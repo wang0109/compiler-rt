@@ -734,7 +734,7 @@ struct string_view
 template<class T>
 constexpr string_view get_name()
 {
-    char const* p = __PRETTY_FUNCTION__;
+    char const* p = __FUNCSIG__;
     while (*p++ != '=');
     for (; *p == ' '; ++p);
     char const* p2 = p;
