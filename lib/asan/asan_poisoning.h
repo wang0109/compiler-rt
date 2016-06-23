@@ -92,7 +92,7 @@ ALWAYS_INLINE void FastPoisonShadow(uptr aligned_beg, uptr aligned_size,
       shadow_end - shadow_beg < common_flags()->clear_shadow_mmap_threshold) {
     /* VReport("In %s, aligned_beg: %llx\n", __FILE__, (uptr)aligned_beg); */
     Report("In FastPoisonShadow, aligned_beg: %llx\n", aligned_beg);
-    dump_virtualquery();
+    /* dump_virtualquery(); */
     // TODO: check with a loop read, just to verify that it was not
     // my stomping's fault
     // FIXME: Remove all these debug things.
