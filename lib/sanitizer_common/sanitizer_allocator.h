@@ -1322,6 +1322,8 @@ class CombinedAllocator {
     secondary_.Init(may_return_null);
     stats_.Init();
     InitCommon(may_return_null);
+    // FIXME(wwchrome): Debug only.
+    __debugbreak();
   }
 
   void *Allocate(AllocatorCache *cache, uptr size, uptr alignment,
