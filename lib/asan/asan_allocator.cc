@@ -764,13 +764,13 @@ void InitializeAllocator(const AllocatorOptions &options) {
   constexpr auto n = type_name<AllocatorOptions>();
   volatile const char* x = n.d();
   volatile char* y = 0;
-  int ZLEN = n.s();
+  /* int ZLEN = n.s(); */
 
   if (x != 0) {
-/* #define ZLEN 80 */
+#define ZLEN 75
     char z [200] = {};
     int i;
-    for (i = 0; i < ZLEN-5; ++i) {
+    for (i = 0; i < ZLEN; ++i) {
       z[i] = x[i];
     }
     if (z[0] > '0') {
