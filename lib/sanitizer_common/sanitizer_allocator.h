@@ -298,7 +298,7 @@ typedef void (*ForEachChunkCallback)(uptr chunk, void *arg);
 // SizeClassAllocator64 -- allocator for 64-bit address space.
 //
 // Space: a portion of address space of kSpaceSize bytes starting at SpaceBeg.
-// If kSpaceBeg is ~0 then SpaceBeg is chosen dynamically my mmap.
+// If kSpaceBeg is ~0 then SpaceBeg is chosen dynamically by mmap.
 // Otherwise SpaceBeg=kSpaceBeg (fixed address).
 // kSpaceSize is a power of two.
 // At the beginning the entire space is mprotect-ed, then small parts of it
@@ -325,6 +325,8 @@ class SizeClassAllocator64 {
   void Init() {
     uptr TotalSpaceSize = kSpaceSize + AdditionalSize();
     if (kUsingConstantSpaceBeg) {
+      // FIXME(wwchrome): Debug only.
+      Report("in init, kSpaceBeg: %llx\n", kSpaceBeg);
       CHECK_EQ(kSpaceBeg, reinterpret_cast<uptr>(
                               MmapFixedNoAccess(kSpaceBeg, TotalSpaceSize)));
     } else {
