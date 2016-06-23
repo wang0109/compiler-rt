@@ -742,7 +742,8 @@ class static_string
 };
 
 template <class T>
-constexpr static_string
+/* constexpr static_string */
+constexpr const char*
 type_name()
 {
   /* static_string x = __FUNCSIG__; */
@@ -759,7 +760,8 @@ void InitializeAllocator(const AllocatorOptions &options) {
   /* volatile char* tn = (char*)typeid(instance).name(); */
   // FIXME(wwchrome): Debug only.
   constexpr auto n = type_name<int>();
-  volatile char* x = n;
+  volatile const char* x = n;
+  /* volatile char* x = n; */
   __debugbreak();
   instance.Initialize(options);
 }
