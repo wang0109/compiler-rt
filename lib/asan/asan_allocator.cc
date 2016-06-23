@@ -28,6 +28,7 @@
 #include "sanitizer_common/sanitizer_stackdepot.h"
 #include "sanitizer_common/sanitizer_quarantine.h"
 #include "lsan/lsan_common.h"
+#include <typeinfo>
 #if SANITIZER_WINDOWS64
 #include <Windows.h>
 #endif
@@ -724,6 +725,9 @@ StackTrace AsanChunkView::GetFreeStack() {
 }
 
 void InitializeAllocator(const AllocatorOptions &options) {
+  // FIXME(wwchrome): Debug only.
+  /* Report("type check: instance has type: %s\n", typeid(instance).name()); */
+  printf("type check: instance has type: %s\n", typeid(instance).name());
   instance.Initialize(options);
 }
 
