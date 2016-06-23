@@ -16,10 +16,6 @@
 #include "asan_internal.h"
 #include "asan_mapping.h"
 #include "sanitizer_common/sanitizer_flags.h"
-#if SANITIZER_WINDOWS64
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
 
 namespace __asan {
 
