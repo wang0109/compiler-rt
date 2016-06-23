@@ -737,8 +737,8 @@ class static_string
       constexpr static_string(const char(&a)[N]) noexcept : data(a), size(N-1) {}
     constexpr static_string(const char* p, std::size_t N) noexcept : data(p), size(N) {}
 
-    constexpr const char* data() const noexcept {return data;}
-    constexpr std::size_t size() const noexcept {return size;}
+    constexpr const char* d() const noexcept {return data;}
+    constexpr std::size_t s() const noexcept {return size;}
 };
 
 template <class T>
@@ -746,7 +746,7 @@ constexpr static_string
 type_name()
 {
   static_string x = __FUNCSIG__;
-  return static_string(x.data(), x.size());
+  return static_string(x.d(), x.s());
 }
 
 void InitializeAllocator(const AllocatorOptions &options) {
