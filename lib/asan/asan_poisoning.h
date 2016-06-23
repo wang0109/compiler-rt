@@ -36,6 +36,32 @@ __declspec(noinline) static void Debug_memset1(volatile uptr aa,
     *ii = cc;
   }
 }
+
+static dump_virtualquery() {
+  // FIXME(wwchrome).Dump from 0 to 128T.
+  uptr addr = 0;
+  int limit = 5; //
+  Report("Prting for %d regions....\n", limit);
+  int i;
+  for (i = 0; i < limit; ++i) {
+    MEMORY_BASIC_INFORMATION mbi;
+    if (!VirtualQuery ((LPVOID)addr, &mbi, sizeof(mbi)))
+    {
+      __debugbreak();
+    }
+    Report("====================================\n");
+    // print one address first.
+    Report(
+        "baseaddress: %llx\n, allocationbase: %llx \n, allocationprotect %llx, "
+        "regionsize: %llx\n, state: %llx\n, protect: %llx\n, type: %llx\n ",
+        (uptr)mbi.baseaddress, (uptr)mbi.allocationbase,
+        (uptr)mbi.allocationprotect, (uptr)mbi.regionsize, (uptr)mbi.state,
+        (uptr)mbi.protect, (uptr)mbi.type );
+
+    addr += (uptr)mbi.regionsize;
+  }
+
+}
 #endif
 
 // Poisons the shadow memory for "redzone_size" bytes starting from
@@ -63,6 +89,7 @@ ALWAYS_INLINE void FastPoisonShadow(uptr aligned_beg, uptr aligned_size,
       shadow_end - shadow_beg < common_flags()->clear_shadow_mmap_threshold) {
     /* VReport("In %s, aligned_beg: %llx\n", __FILE__, (uptr)aligned_beg); */
     Report("In FastPoisonShadow, aligned_beg: %llx\n", aligned_beg);
+    dump_virtualquery();
     // TODO: check with a loop read, just to verify that it was not
     // my stomping's fault
     // FIXME: Remove all these debug things.

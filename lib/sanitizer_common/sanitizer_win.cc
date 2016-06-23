@@ -206,13 +206,13 @@ void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
     {
       __debugbreak();
     }
-    // Print one address first.
+    // print one address first.
     Report(
-        "BaseAddress: %llx\n, AllocationBase: %llx \n, AllocationProtect %llx, "
-        "RegionSize: %llx\n, State: %llx\n, Protect: %llx\n, Type: %llx\n ",
-        (uptr)mbi.BaseAddress, (uptr)mbi.AllocationBase,
-        (uptr)mbi.AllocationProtect, (uptr)mbi.RegionSize, (uptr)mbi.State,
-        (uptr)mbi.Protect, (uptr)mbi.Type );
+        "baseaddress: %llx\n, allocationbase: %llx \n, allocationprotect %llx, "
+        "regionsize: %llx\n, state: %llx\n, protect: %llx\n, type: %llx\n ",
+        (uptr)mbi.baseaddress, (uptr)mbi.allocationbase,
+        (uptr)mbi.allocationprotect, (uptr)mbi.regionsize, (uptr)mbi.state,
+        (uptr)mbi.protect, (uptr)mbi.type );
 
     // FIXME
     __debugbreak();
