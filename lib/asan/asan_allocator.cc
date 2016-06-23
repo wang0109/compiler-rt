@@ -771,7 +771,7 @@ void InitializeAllocator(const AllocatorOptions &options) {
 /* #define ZLEN 75 */
     char z [78] = {};
     int i;
-    for (i = 0; i < ZLEN; ++i) {
+    for (i = 0; i < 78; ++i) {
       z[i] = x[i];
     }
     if (z[0] > '0') {
