@@ -37,31 +37,6 @@ __declspec(noinline) static void Debug_memset1(volatile uptr aa,
   }
 }
 
-/* static void dump_virtualquery() { */
-/*   // FIXME(wwchrome).Dump from 0 to 128T. */
-/*   uptr addr = 0; */
-/*   int limit = 5; // */
-/*   Report("Prting for %d regions....\n", limit); */
-/*   int i; */
-/*   for (i = 0; i < limit; ++i) { */
-/*     MEMORY_BASIC_INFORMATION mbi; */
-/*     if (!VirtualQuery ((LPVOID)addr, &mbi, sizeof(mbi))) */
-/*     { */
-/*       __debugbreak(); */
-/*     } */
-/*     Report("====================================\n"); */
-    // Print one address first.
-    /* Report( */
-    /*     "BaseAddress: %llx\n, AllocationBase: %llx \n, AllocationProtect %llx, " */
-    /*     "RegionSize: %llx\n, State: %llx\n, Protect: %llx\n, Type: %llx\n ", */
-    /*     (uptr)mbi.BaseAddress, (uptr)mbi.AllocationBase, */
-    /*     (uptr)mbi.AllocationProtect, (uptr)mbi.RegionSize, (uptr)mbi.State, */
-    /*     (uptr)mbi.Protect, (uptr)mbi.Type ); */
-
-    /* addr += (uptr)mbi.RegionSize; */
-  /* } */
-
-/* } */
 #endif
 
 // Poisons the shadow memory for "redzone_size" bytes starting from
