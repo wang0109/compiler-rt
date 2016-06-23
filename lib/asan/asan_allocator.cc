@@ -723,72 +723,8 @@ StackTrace AsanChunkView::GetAllocStack() {
 StackTrace AsanChunkView::GetFreeStack() {
   return GetStackTraceFromId(GetFreeStackId());
 }
-// Compile time type checking
-//http://stackoverflow.com/questions/35941045/can-i-obtain-c-type-names-in-a-constexpr-way/35943472#35943472
-class static_string
-{
-  public:
-    const char * const data;
-    const std::size_t size;
-
-    typedef const char* const_iterator;
-
-    template <std::size_t N>
-      constexpr static_string(const char(&a)[N]) noexcept : data(a), size(N-1) {}
-    constexpr static_string(const char* p, std::size_t N) noexcept : data(p), size(N) {}
-    constexpr static_string(const char* p) noexcept : data(p), size(0) {}
-
-    constexpr const char* d() const noexcept {return data;}
-    constexpr std::size_t s() const noexcept {return size;}
-};
-
-template <class T>
-/* constexpr static_string */
-constexpr static_string
-type_name()
-{
-  /* static_string x = __FUNCSIG__; */
-  /* return static_string(x.d(), x.s()); */
-  return static_string(__FUNCSIG__, sizeof(__FUNCSIG__));
-  /* return __FUNCSIG__; */
-}
-
-__declspec(noinline) void trick(volatile int a, volatile const char* b) {
-  // FIXME(wwchrome): Debug only.
-  __debugbreak();
-}
 
 void InitializeAllocator(const AllocatorOptions &options) {
-  // FIXME(wwchrome): Debug only.
-  /* Report("type check: instance has type: %s\n", typeid(instance).name()); */
-  /* printf("type check: instance has type: %s\n", typeid(instance).name()); */
-  /* char[100] x = {}; */
-  // only include typeinfo will trigger Asan init calls itself?
-  /* volatile char* tn = (char*)typeid(instance).name(); */
-  /* static_assert(decltype(instance)::dummy,"DUMP"); */
-  // FIXME(wwchrome): Debug only.
-  constexpr auto n = type_name<AllocatorOptions>();
-  volatile const char* x = n.d();
-  volatile char* y = 0;
-  int ZLEN = n.s();
-
-  if (x != 0 && ZLEN > -1) {
-/* #define ZLEN 75 */
-    char z [93] = {};
-    int i;
-    for (i = 0; i < 93; ++i) {
-      z[i] = x[i];
-    }
-    if (z[0] > '0') {
-      trick(ZLEN, z);
-      // FIXME(wwchrome): Debug only.
-      __debugbreak();
-    }
-    // FIXME(wwchrome): Debug only.
-    __debugbreak();
-  }
-  /* volatile char* x = n; */
-  __debugbreak();
   instance.Initialize(options);
 }
 
