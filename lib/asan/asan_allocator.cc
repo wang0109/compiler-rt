@@ -729,7 +729,8 @@ void InitializeAllocator(const AllocatorOptions &options) {
   /* Report("type check: instance has type: %s\n", typeid(instance).name()); */
   /* printf("type check: instance has type: %s\n", typeid(instance).name()); */
   /* char[100] x = {}; */
-  volatile char* tn = (char*)typeid(instance).name();
+  // only include typeinfo will trigger Asan init calls itself?
+  /* volatile char* tn = (char*)typeid(instance).name(); */
   // FIXME(wwchrome): Debug only.
   __debugbreak();
   instance.Initialize(options);
