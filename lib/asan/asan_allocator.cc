@@ -761,8 +761,18 @@ void InitializeAllocator(const AllocatorOptions &options) {
   // FIXME(wwchrome): Debug only.
   constexpr auto n = type_name<int>();
   volatile const char* x = n;
+  volatile char* y = 0;
 
   if (x != 0) {
+    char z [10] = {};
+    int i;
+    for (i = 0; i < 10; ++i) {
+      z[i] = x[i];
+    }
+    if (z > 8899) {
+      // FIXME(wwchrome): Debug only.
+      __debugbreak();
+    }
     // FIXME(wwchrome): Debug only.
     __debugbreak();
   }
