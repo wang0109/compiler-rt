@@ -17,7 +17,7 @@
 #include "asan_mapping.h"
 #include "sanitizer_common/sanitizer_flags.h"
 #if SANITIZER_WINDOWS64
-#include <windows.h>
+/* #include <windows.h> */
 #endif
 
 namespace __asan {
