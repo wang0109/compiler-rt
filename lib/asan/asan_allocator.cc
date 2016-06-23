@@ -757,7 +757,7 @@ void InitializeAllocator(const AllocatorOptions &options) {
   // only include typeinfo will trigger Asan init calls itself?
   /* volatile char* tn = (char*)typeid(instance).name(); */
   // FIXME(wwchrome): Debug only.
-  constexpr auto n = typename<int>();
+  constexpr auto n = type_name<int>();
   volatile char* x = n;
   __debugbreak();
   instance.Initialize(options);
