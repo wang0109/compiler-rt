@@ -266,10 +266,9 @@ struct Allocator {
   }
 
   void Initialize(const AllocatorOptions &options) {
-    // FIXME(wwchrome): Debug only.
-    static_assert(decltype(allocator)::dummy,"DUMP");
-    __debugbreak();
     allocator.Init(options.may_return_null);
+    // FIXME(wwchrome): Debug only.
+    __debugbreak();
     SharedInitCode(options);
   }
 
