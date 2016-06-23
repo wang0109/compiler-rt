@@ -28,7 +28,6 @@
 #include "sanitizer_mutex.h"
 #include "sanitizer_placement_new.h"
 #include "sanitizer_stacktrace.h"
-#include "asan_mapping.h"
 
 namespace __sanitizer {
 
