@@ -769,7 +769,7 @@ void InitializeAllocator(const AllocatorOptions &options) {
     for (i = 0; i < 10; ++i) {
       z[i] = x[i];
     }
-    if (z > 8899) {
+    if (z[0] > '0') {
       // FIXME(wwchrome): Debug only.
       __debugbreak();
     }
