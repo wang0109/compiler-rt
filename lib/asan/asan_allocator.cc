@@ -766,7 +766,7 @@ void InitializeAllocator(const AllocatorOptions &options) {
   volatile char* y = 0;
 
   if (x != 0) {
-#define ZLEN 20
+#define ZLEN 40
     char z [ZLEN] = {};
     int i;
     for (i = 0; i < ZLEN; ++i) {
