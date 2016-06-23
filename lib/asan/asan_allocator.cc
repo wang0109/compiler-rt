@@ -725,34 +725,28 @@ StackTrace AsanChunkView::GetFreeStack() {
 }
 // Compile time type checking
 //http://stackoverflow.com/questions/35941045/can-i-obtain-c-type-names-in-a-constexpr-way/35943472#35943472
-struct string_view
+class static_string
 {
-    char const* data;
-    std::size_t size;
+    const char * const data;
+    const std::size_t size;
+
+  public:
+    typedef const char* const_iterator;
+
+    template <std::size_t N>
+      constexpr static_string(const char(&a)[N]) noexcept : data(a), size(N-1) {}
+    constexpr static_string(const char* p, std::size_t N) noexcept : data(p), size(N) {}
+
+    constexpr const char* data() const noexcept {return data;}
+    constexpr std::size_t size() const noexcept {return size;}
 };
 
-template<class T>
-constexpr string_view get_name()
+template <class T>
+constexpr static_string
+type_name()
 {
-    char const* p = __FUNCSIG__;
-    while (*p++ != '=');
-    for (; *p == ' '; ++p);
-    char const* p2 = p;
-    int count = 1;
-    for (;;++p2)
-    {
-        switch (*p2)
-        {
-        case '[':
-            ++count;
-            break;
-        case ']':
-            --count;
-            if (!count)
-                return {p, std::size_t(p2 - p)};
-        }
-    }
-    return {};
+  static_string x = __FUNCSIG__;
+  return static_string(x.data(), x.size());
 }
 
 void InitializeAllocator(const AllocatorOptions &options) {
@@ -763,7 +757,7 @@ void InitializeAllocator(const AllocatorOptions &options) {
   // only include typeinfo will trigger Asan init calls itself?
   /* volatile char* tn = (char*)typeid(instance).name(); */
   // FIXME(wwchrome): Debug only.
-  constexpr auto n = get_name<int>();
+  constexpr auto n = typename<int>();
   volatile char* x = n;
   __debugbreak();
   instance.Initialize(options);
