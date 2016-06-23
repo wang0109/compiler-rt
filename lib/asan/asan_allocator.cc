@@ -29,7 +29,6 @@
 #include "sanitizer_common/sanitizer_quarantine.h"
 #include "lsan/lsan_common.h"
 #include <typeinfo>
-#include <cstdio>
 #if SANITIZER_WINDOWS64
 #include <Windows.h>
 #endif
@@ -728,7 +727,11 @@ StackTrace AsanChunkView::GetFreeStack() {
 void InitializeAllocator(const AllocatorOptions &options) {
   // FIXME(wwchrome): Debug only.
   /* Report("type check: instance has type: %s\n", typeid(instance).name()); */
-  printf("type check: instance has type: %s\n", typeid(instance).name());
+  /* printf("type check: instance has type: %s\n", typeid(instance).name()); */
+  char[100] x = {};
+  char* tn = (char*)typeid(instance).name();
+  // FIXME(wwchrome): Debug only.
+  __debugbreak();
   instance.Initialize(options);
 }
 
