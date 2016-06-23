@@ -43,9 +43,6 @@ void PoisonShadow(uptr addr, uptr size, u8 value) {
   CHECK(AddrIsAlignedByGranularity(addr + size));
   CHECK(AddrIsInMem(addr + size - SHADOW_GRANULARITY));
   CHECK(REAL(memset));
-  volatile uptr a = addr;
-  volatile uptr b = size;
-  volatile u8 c = value;
   FastPoisonShadow(addr, size, value);
 }
 
