@@ -727,10 +727,10 @@ StackTrace AsanChunkView::GetFreeStack() {
 //http://stackoverflow.com/questions/35941045/can-i-obtain-c-type-names-in-a-constexpr-way/35943472#35943472
 class static_string
 {
+  public:
     const char * const data;
     const std::size_t size;
 
-  public:
     typedef const char* const_iterator;
 
     template <std::size_t N>
