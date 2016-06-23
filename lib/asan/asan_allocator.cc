@@ -749,7 +749,7 @@ type_name()
 {
   /* static_string x = __FUNCSIG__; */
   /* return static_string(x.d(), x.s()); */
-  return static_string(__FUNCSIG__);
+  return static_string(__FUNCSIG__, sizeof(__FUNCSIG__));
   /* return __FUNCSIG__; */
 }
 
@@ -764,9 +764,10 @@ void InitializeAllocator(const AllocatorOptions &options) {
   constexpr auto n = type_name<AllocatorOptions>();
   volatile const char* x = n.d();
   volatile char* y = 0;
+  int ZLEN = n.s();
 
   if (x != 0) {
-#define ZLEN 80
+/* #define ZLEN 80 */
     char z [ZLEN] = {};
     int i;
     for (i = 0; i < ZLEN; ++i) {
