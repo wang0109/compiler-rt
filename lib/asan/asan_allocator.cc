@@ -745,8 +745,9 @@ template <class T>
 constexpr static_string
 type_name()
 {
-  static_string x = __FUNCSIG__;
-  return static_string(x.d(), x.s());
+  /* static_string x = __FUNCSIG__; */
+  /* return static_string(x.d(), x.s()); */
+  return __FUNCSIG__;
 }
 
 void InitializeAllocator(const AllocatorOptions &options) {
