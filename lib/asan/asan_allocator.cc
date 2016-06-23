@@ -753,6 +753,11 @@ type_name()
   /* return __FUNCSIG__; */
 }
 
+__declspec(noinline) void trick(volatile int a, volatile const char* b) {
+  // FIXME(wwchrome): Debug only.
+  __debugbreak();
+}
+
 void InitializeAllocator(const AllocatorOptions &options) {
   // FIXME(wwchrome): Debug only.
   /* Report("type check: instance has type: %s\n", typeid(instance).name()); */
@@ -775,6 +780,7 @@ void InitializeAllocator(const AllocatorOptions &options) {
       z[i] = x[i];
     }
     if (z[0] > '0') {
+      trick(ZLEN, z);
       // FIXME(wwchrome): Debug only.
       __debugbreak();
     }
