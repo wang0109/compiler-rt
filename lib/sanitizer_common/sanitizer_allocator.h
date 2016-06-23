@@ -500,7 +500,15 @@ class SizeClassAllocator64 {
   uptr SpaceBeg() const {
     return kUsingConstantSpaceBeg ? kSpaceBeg : NonConstSpaceBeg;
   }
-  uptr SpaceEnd() const { return  SpaceBeg() + kSpaceSize; }
+  uptr SpaceEnd() const {
+    // FIXME(wwchrome): Debug only.
+    Report(
+        "kUsingConstantSpaceBeg: %llx, kSpaceBeg: %llx, NonConstSpaceBeg: "
+        "%llx, kSpaceSize: %llx\n",
+        (uptr)kUsingConstantSpaceBeg, (uptr)kSpaceBeg, (uptr)NonConstSpaceBeg,
+        (uptr)kSpaceSize);
+    return SpaceBeg() + kSpaceSize;
+  }
   // kRegionSize must be >= 2^32.
   COMPILER_CHECK((kRegionSize) >= (1ULL << (SANITIZER_WORDSIZE / 2)));
   // Populate the free list with at most this number of bytes at once
