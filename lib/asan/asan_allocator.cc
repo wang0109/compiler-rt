@@ -29,6 +29,7 @@
 #include "sanitizer_common/sanitizer_quarantine.h"
 #include "lsan/lsan_common.h"
 #include <typeinfo>
+#include <cstdio>
 #if SANITIZER_WINDOWS64
 #include <Windows.h>
 #endif
