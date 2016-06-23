@@ -736,6 +736,7 @@ class static_string
     template <std::size_t N>
       constexpr static_string(const char(&a)[N]) noexcept : data(a), size(N-1) {}
     constexpr static_string(const char* p, std::size_t N) noexcept : data(p), size(N) {}
+    constexpr static_string(const char* p) noexcept : data(p), size(0) {}
 
     constexpr const char* d() const noexcept {return data;}
     constexpr std::size_t s() const noexcept {return size;}
@@ -743,12 +744,13 @@ class static_string
 
 template <class T>
 /* constexpr static_string */
-constexpr const char*
+constexpr static_string
 type_name()
 {
   /* static_string x = __FUNCSIG__; */
   /* return static_string(x.d(), x.s()); */
-  return __FUNCSIG__;
+  return static_string(__FUNCSIG__);
+  /* return __FUNCSIG__; */
 }
 
 void InitializeAllocator(const AllocatorOptions &options) {
@@ -759,8 +761,8 @@ void InitializeAllocator(const AllocatorOptions &options) {
   // only include typeinfo will trigger Asan init calls itself?
   /* volatile char* tn = (char*)typeid(instance).name(); */
   // FIXME(wwchrome): Debug only.
-  constexpr auto n = type_name<int>();
-  volatile const char* x = n;
+  constexpr auto n = type_name<AllocatorOptions>();
+  volatile const char* x = n.data();
   volatile char* y = 0;
 
   if (x != 0) {
