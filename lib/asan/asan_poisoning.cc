@@ -39,10 +39,11 @@ bool CanPoisonMemory() {
 void dump_virtualquery() {
   // FIXME(wwchrome).Dump from 0 to 128T.
   uptr addr = 0;
-  int limit = 5; //
+  int limit = 50; //
+  uptr MAX_RAM = 1ULL << 47 - 1;
   Report("Prting for %d regions....\n", limit);
   int i;
-  for (i = 0; i < limit; ++i) {
+  for (i = 0; i < limit && addr < MAX_RAM; ++i) {
     MEMORY_BASIC_INFORMATION mbi;
     if (!VirtualQuery ((LPVOID)addr, &mbi, sizeof(mbi)))
     {
