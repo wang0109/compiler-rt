@@ -35,13 +35,20 @@ bool CanPoisonMemory() {
   return atomic_load(&can_poison_memory, memory_order_acquire);
 }
 #if SANITIZER_WINDOWS64
+class Region {
+  public:
+    uptr regionBeginAdr;
+    uptr regionEndAdr;
+    uptr regionState;
+};
 
 void dump_virtualquery() {
   // FIXME(wwchrome).Dump from 0 to 128T.
   uptr addr = 0;
-  int limit = 500; //
+  const int limit = 100; //
   uptr MAX_RAM = 1ULL << 47 - 1;
   Report("Prting for %d regions....\n", limit);
+  Region regions[limit];
   int i;
   for (i = 0; i < limit && addr < MAX_RAM; ++i) {
     MEMORY_BASIC_INFORMATION mbi;
@@ -57,10 +64,20 @@ void dump_virtualquery() {
         (uptr)mbi.BaseAddress, (uptr)mbi.AllocationBase,
         (uptr)mbi.AllocationProtect, (uptr)mbi.RegionSize, (uptr)mbi.State,
         (uptr)mbi.Protect, (uptr)mbi.Type );
+    regions[i].regionBeginAdr = (uptr)mbi.AllocationBase;
+    regions[i].regionEndAdr = (uptr)mbi.AllocationBase + (uptr)mbi.RegionSize;
+    regions[i].regionState = (uptr)mbi.State;
 
     addr += (uptr)mbi.RegionSize;
   }
   Report("Total num regions: %d, last addr: %llx\n", i, addr);
+  for (int j = 0; j < i; ++j) {
+    if (regions[j].regionState == 0x10000) // Free
+    {
+      Report("Free region[ %d ] at [%llx, %llx]\n", j,
+             regions[j].regionBeginAdr, regions[j].regionEndAdr);
+    }
+  }
 }
 #endif
 
