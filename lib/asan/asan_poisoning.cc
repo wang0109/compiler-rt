@@ -60,6 +60,7 @@ void dump_virtualquery() {
 
     addr += (uptr)mbi.RegionSize;
   }
+  Report("Total num regions: %d, last addr: %llx\n", i, addr);
 }
 #endif
 
