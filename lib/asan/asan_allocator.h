@@ -20,7 +20,7 @@
 #include "asan_interceptors.h"
 #include "sanitizer_common/sanitizer_allocator.h"
 #include "sanitizer_common/sanitizer_list.h"
-#include "asan_myallocator.h"
+#include "sanitizer_common/asan_myallocator.h"
 
 namespace __asan {
 
