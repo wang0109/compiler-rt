@@ -61,10 +61,10 @@ endif()
 
 # -gline-tables-only must be enough for these tests, so use it if possible.
 if(COMPILER_RT_TEST_COMPILER_ID MATCHES "Clang")
-  list(APPEND SANITIZER_TEST_CFLAGS_COMMON -gline-tables-only)
+  list(APPEND SANITIZER_TEST_CFLAGS_COMMON -gline-tables-only -gcodeview)
   list(APPEND SANITIZER_TEST_LINK_FLAGS_COMMON -gline-tables-only)
 else()
-  list(APPEND SANITIZER_TEST_CFLAGS_COMMON -g)
+  list(APPEND SANITIZER_TEST_CFLAGS_COMMON -g -gcodeview)
   list(APPEND SANITIZER_TEST_LINK_FLAGS_COMMON -g)
 endif()
 if(MSVC)
