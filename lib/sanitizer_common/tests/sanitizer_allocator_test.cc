@@ -14,6 +14,7 @@
 #include "sanitizer_common/sanitizer_allocator.h"
 #include "sanitizer_common/sanitizer_allocator_internal.h"
 #include "sanitizer_common/sanitizer_common.h"
+#include "sanitizer_common/sanitizer_platform.h"
 #if SANITIZER_WINDOWS64
 #include "sanitizer_common/myallocator.h"
 #endif
