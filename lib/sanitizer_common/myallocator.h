@@ -43,7 +43,7 @@ class MyAllocator
     if (alignment > 8)
       CHECK_EQ(res & (alignment - 1), 0);
 
-    return res;
+    return (void*)res;
   }
 
   bool MayReturnNull() const {
