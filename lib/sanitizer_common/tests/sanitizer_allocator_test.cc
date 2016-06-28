@@ -32,20 +32,6 @@
 // Too slow for debug build
 #if !SANITIZER_DEBUG
 
-#if SANITIZER_WINDOWS64
-// dump types, no need eventually.
-static const uptr kAllocatorSpace = 0x700000000000ULL;
-static const uptr kAllocatorSize  = 0x010000000000ULL;  // 1T.
-static const u64 kAddressSpaceSize = 1ULL << 47;
-
-typedef SizeClassAllocator64<
-  kAllocatorSpace, kAllocatorSize, 16, DefaultSizeClassMap> Allocator64;
-
-typedef SizeClassAllocator64<
-  kAllocatorSpace, kAllocatorSize, 16, CompactSizeClassMap> Allocator64Compact;
-
-#endif
-
 #if SANITIZER_CAN_USE_ALLOCATOR64
 static const uptr kAllocatorSpace = 0x700000000000ULL;
 static const uptr kAllocatorSize  = 0x010000000000ULL;  // 1T.
@@ -64,6 +50,18 @@ static const u64 kAddressSpaceSize = 1ULL << 39;
 static const u64 kAddressSpaceSize = 1ULL << 53;
 #elif defined(__s390__)
 static const u64 kAddressSpaceSize = 1ULL << 31;
+#elif SANITIZER_WINDOWS64
+// dump types, no need eventually.
+static const uptr kAllocatorSpace = 0x700000000000ULL;
+static const uptr kAllocatorSize  = 0x010000000000ULL;  // 1T.
+static const u64 kAddressSpaceSize = 1ULL << 47;
+
+typedef SizeClassAllocator64<
+  kAllocatorSpace, kAllocatorSize, 16, DefaultSizeClassMap> Allocator64;
+
+typedef SizeClassAllocator64<
+  kAllocatorSpace, kAllocatorSize, 16, CompactSizeClassMap> Allocator64Compact;
+
 #else
 static const u64 kAddressSpaceSize = 1ULL << 32;
 #endif
