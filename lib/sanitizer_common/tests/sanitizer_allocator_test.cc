@@ -14,6 +14,9 @@
 #include "sanitizer_common/sanitizer_allocator.h"
 #include "sanitizer_common/sanitizer_allocator_internal.h"
 #include "sanitizer_common/sanitizer_common.h"
+#if SANITIZER_WINDOWS64
+#include "sanitizer_common/myallocator.h"
+#endif
 
 #include "sanitizer_test_utils.h"
 #include "sanitizer_pthread_wrappers.h"
@@ -420,9 +423,15 @@ TEST(SanitizerCommon, LargeMmapAllocator) {
 template
 <class PrimaryAllocator, class SecondaryAllocator, class AllocatorCache>
 void TestCombinedAllocator() {
+#if SANITIZER_WINDOWS64
+  typedef
+      MyAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
+      Allocator;
+#else
   typedef
       CombinedAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
       Allocator;
+#endif
   Allocator *a = new Allocator;
   a->Init(/* may_return_null */ true);
 
