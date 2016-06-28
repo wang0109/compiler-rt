@@ -322,6 +322,9 @@ TEST(SanitizerCommon, SizeClassAllocator32MapUnmapCallback) {
   //         TestMapUnmapCallback::unmap_count);
 }
 
+#if SANITIZER_WINDOWS64
+
+//temp disable.
 TEST(SanitizerCommon, LargeMmapAllocatorMapUnmapCallback) {
   TestMapUnmapCallback::map_count = 0;
   TestMapUnmapCallback::unmap_count = 0;
@@ -334,6 +337,7 @@ TEST(SanitizerCommon, LargeMmapAllocatorMapUnmapCallback) {
   a.Deallocate(&stats, x);
   EXPECT_EQ(TestMapUnmapCallback::unmap_count, 1);
 }
+#endif
 
 template<class Allocator>
 void FailInAssertionOnOOM() {
