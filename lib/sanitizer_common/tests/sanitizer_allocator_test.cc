@@ -322,7 +322,7 @@ TEST(SanitizerCommon, SizeClassAllocator32MapUnmapCallback) {
   //         TestMapUnmapCallback::unmap_count);
 }
 
-#if SANITIZER_WINDOWS64
+#if !SANITIZER_WINDOWS64
 
 //temp disable.
 TEST(SanitizerCommon, LargeMmapAllocatorMapUnmapCallback) {
