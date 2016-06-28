@@ -170,6 +170,9 @@
 #ifndef SANITIZER_CAN_USE_ALLOCATOR64
 # if defined(__mips64) || defined(__aarch64__)
 #  define SANITIZER_CAN_USE_ALLOCATOR64 0
+#elif SANITIZER_WINDOWS64
+// Do not use this
+#  define SANITIZER_CAN_USE_ALLOCATOR64 0
 # else
 #  define SANITIZER_CAN_USE_ALLOCATOR64 (SANITIZER_WORDSIZE == 64)
 # endif
