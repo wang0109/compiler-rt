@@ -36,7 +36,7 @@ class MyAllocator
     // Check heap is inited.
     if (!_win_heap) { __debugbreak(); }
     // Prefer zero-init the heap.
-    uptr res = HeapAlloc(_win_heap, HEAP_ZERO_MEMORY, size );
+    uptr res = (uptr)HeapAlloc(_win_heap, HEAP_ZERO_MEMORY, size );
     // If it fails, enter debug.
     if (!res) { __debugbreak(); }
     // Alignment needs to be checked.
