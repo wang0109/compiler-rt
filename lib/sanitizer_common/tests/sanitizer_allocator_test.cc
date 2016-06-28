@@ -483,6 +483,15 @@ void TestCombinedAllocator() {
   a->TestOnlyUnmap();
 }
 
+#if SANITIZER_WINDOWS64
+// test my allocator.
+TEST(SanitizerCommon, CombinedAllocator64) {
+  TestCombinedAllocator<Allocator64,
+      LargeMmapAllocator<>,
+      SizeClassAllocatorLocalCache<Allocator64> > ();
+}
+#endif
+
 #if SANITIZER_CAN_USE_ALLOCATOR64
 TEST(SanitizerCommon, CombinedAllocator64) {
   TestCombinedAllocator<Allocator64,
