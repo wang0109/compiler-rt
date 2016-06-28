@@ -20,6 +20,7 @@
 #include "asan_interceptors.h"
 #include "sanitizer_common/sanitizer_allocator.h"
 #include "sanitizer_common/sanitizer_list.h"
+#include "asan_myallocator.h"
 
 namespace __asan {
 
@@ -128,7 +129,7 @@ const uptr kAllocatorSize  =  0x40000000000ULL;  // 4T.
 # endif
 typedef DefaultSizeClassMap SizeClassMap;
 typedef SizeClassAllocator64<kAllocatorSpace, kAllocatorSize, 0 /*metadata*/,
-    SizeClassMap, AsanMapUnmapCallback> PrimaryAllocator;
+     SizeClassMap, AsanMapUnmapCallback> PrimaryAllocator;
 #else  // Fallback to SizeClassAllocator32.
 static const uptr kRegionSizeLog = 20;
 static const uptr kNumRegions = SANITIZER_MMAP_RANGE_SIZE >> kRegionSizeLog;
@@ -147,9 +148,11 @@ typedef SizeClassAllocator32<0, SANITIZER_MMAP_RANGE_SIZE, 16,
 static const uptr kNumberOfSizeClasses = SizeClassMap::kNumClasses;
 typedef SizeClassAllocatorLocalCache<PrimaryAllocator> AllocatorCache;
 typedef LargeMmapAllocator<AsanMapUnmapCallback> SecondaryAllocator;
-typedef CombinedAllocator<PrimaryAllocator, AllocatorCache,
-    SecondaryAllocator> AsanAllocator;
-
+//typedef CombinedAllocator<PrimaryAllocator, AllocatorCache,
+//   SecondaryAllocator> AsanAllocator;
+// wwchrome: Roll my own allocator.
+typedef MyAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
+    AsanAllocator;
 
 struct AsanThreadLocalMallocStorage {
   uptr quarantine_cache[16];
