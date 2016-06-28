@@ -20,7 +20,9 @@
 #include "asan_interceptors.h"
 #include "sanitizer_common/sanitizer_allocator.h"
 #include "sanitizer_common/sanitizer_list.h"
+#if SANITZER_WINDOWS64
 #include "sanitizer_common/myallocator.h"
+#endif
 
 namespace __asan {
 
@@ -148,11 +150,14 @@ typedef SizeClassAllocator32<0, SANITIZER_MMAP_RANGE_SIZE, 16,
 static const uptr kNumberOfSizeClasses = SizeClassMap::kNumClasses;
 typedef SizeClassAllocatorLocalCache<PrimaryAllocator> AllocatorCache;
 typedef LargeMmapAllocator<AsanMapUnmapCallback> SecondaryAllocator;
-//typedef CombinedAllocator<PrimaryAllocator, AllocatorCache,
-//   SecondaryAllocator> AsanAllocator;
+#ifdef SANITZER_WINDOWS64
 // wwchrome: Roll my own allocator.
 typedef MyAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
     AsanAllocator;
+#else
+typedef CombinedAllocator<PrimaryAllocator, AllocatorCache,
+   SecondaryAllocator> AsanAllocator;
+#endif
 
 struct AsanThreadLocalMallocStorage {
   uptr quarantine_cache[16];
