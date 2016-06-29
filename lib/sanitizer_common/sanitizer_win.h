@@ -25,7 +25,15 @@
 
 namespace __sanitizer {
 
-template <class PrimaryAllocator, class AllocatorCache,
+// Dummy class.
+class WinHeapSizeClassMap {
+ public:
+  static const uptr kNumClasses = 1;
+  static const uptr kMaxSize = 0x10000000; // ??
+  static uptr ClassID(uptr size) { return 0; }
+};
+
+emplate <class PrimaryAllocator, class AllocatorCache,
           class SecondaryAllocator>  // NOLINT
 class WinHeapAllocator
 {
