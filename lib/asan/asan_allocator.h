@@ -21,7 +21,7 @@
 #include "sanitizer_common/sanitizer_allocator.h"
 #include "sanitizer_common/sanitizer_list.h"
 #if SANITZER_WINDOWS64
-#include "sanitizer_common/myallocator.h"
+#include "sanitizer_common/sanitizer_win.h"
 #endif
 
 namespace __asan {
@@ -152,7 +152,7 @@ typedef SizeClassAllocatorLocalCache<PrimaryAllocator> AllocatorCache;
 typedef LargeMmapAllocator<AsanMapUnmapCallback> SecondaryAllocator;
 #ifdef SANITZER_WINDOWS64
 // wwchrome: Roll my own allocator.
-typedef MyAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
+typedef WinHeapAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
     AsanAllocator;
 #else
 typedef CombinedAllocator<PrimaryAllocator, AllocatorCache,
