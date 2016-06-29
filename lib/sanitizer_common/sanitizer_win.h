@@ -1,10 +1,15 @@
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
+// FIXME
 #define NULL 0
 
 #ifndef SANITIZER_WIN_H
 #define SANITIZER_WIN_H
+
+#include "sanitizer_platform.h"
+
+#if SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 namespace __sanitizer {
 
@@ -154,5 +159,8 @@ class WinHeapAllocator
   /* atomic_uint8_t may_return_null_; */
   /* atomic_uint8_t rss_limit_is_exceeded_; */
 };
-}
+
+} // namespace __sanitizer
+#endif  // SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
+
 #endif  // SANITIZER_WIN_H
