@@ -17,7 +17,7 @@
 #include "sanitizer_common/sanitizer_platform.h"
 
 #if SANITIZER_WINDOWS64
-#include "sanitizer_common/myallocator.h"
+#include "sanitizer_common/sanitizer_win.h"
 #endif
 
 #include "sanitizer_test_utils.h"
@@ -437,7 +437,7 @@ template
 void TestCombinedAllocator() {
 #if SANITIZER_WINDOWS64
   typedef
-      MyAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
+      WinHeapAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
       Allocator;
 #else
   //typedef
