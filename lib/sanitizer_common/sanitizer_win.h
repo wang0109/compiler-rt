@@ -3,14 +3,14 @@
 
 #define NULL 0
 
-#ifndef ASAN_MYALLOCATOR_H
-#define ASAN_MYALLOCATOR_H
+#ifndef SANITIZER_WIN_H
+#define SANITIZER_WIN_H
 
 namespace __sanitizer {
 
 template <class PrimaryAllocator, class AllocatorCache,
           class SecondaryAllocator>  // NOLINT
-class MyAllocator
+class WinHeapAllocator
 {
  public:
   void InitCommon(bool may_return_null) {
@@ -155,4 +155,4 @@ class MyAllocator
   /* atomic_uint8_t rss_limit_is_exceeded_; */
 };
 }
-#endif  // ASAN_MYALLOCATOR_H
+#endif  // SANITIZER_WIN_H
