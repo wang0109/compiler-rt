@@ -178,6 +178,16 @@
 # endif
 #endif
 
+// On Windows, we use existing windows APIs to implement a simple allocator.
+#ifndef SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
+# if defined(_WIN32)
+#   define SANITIZER_CAN_USE_WINHEAP_ALLOCATOR 1
+# else
+// TODO : Move this to zero  TODO(wwchrome): fix it
+#   define SANITIZER_CAN_USE_WINHEAP_ALLOCATOR 1
+# endif
+#endif
+
 // The range of addresses which can be returned my mmap.
 // FIXME: this value should be different on different platforms.  Larger values
 // will still work but will consume more memory for TwoLevelByteMap.
