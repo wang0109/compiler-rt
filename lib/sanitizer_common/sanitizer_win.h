@@ -25,6 +25,9 @@
 
 namespace __sanitizer {
 
+// These dummy classes are needed because it is needed to emulate external APIs
+// of the CombinedAllocator.
+
 // Dummy class.
 class WinHeapSizeClassMap {
  public:
@@ -33,7 +36,16 @@ class WinHeapSizeClassMap {
   static uptr ClassID(uptr size) { return 0; }
 };
 
-emplate <class PrimaryAllocator, class AllocatorCache,
+// Dummy class.
+class WinHeapPrimaryAllocator {
+ public:
+  static bool CanAllocate(uptr size, uptr alignment) { return true; }
+};
+
+// Dummy class.
+class WinHeapAllocatorCache {};
+
+template <class PrimaryAllocator, class AllocatorCache,
           class SecondaryAllocator>  // NOLINT
 class WinHeapAllocator
 {
