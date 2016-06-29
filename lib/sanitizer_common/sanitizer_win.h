@@ -1,4 +1,16 @@
-// FIXME
+//===-- sanitizer_win.h -----------------------------------------*- C++ -*-===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+//
+// Windows-specific syscall wrappers and classes.
+//
+//===----------------------------------------------------------------------===//
+//// FIXME
 #define NULL 0
 
 #ifndef SANITIZER_WIN_H
