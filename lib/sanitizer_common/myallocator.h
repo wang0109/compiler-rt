@@ -22,7 +22,11 @@ class MyAllocator
   void Init(bool may_return_null) {
     // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366599(v=vs.85).aspx
     // Use default options. Size is not tested.
-    _win_heap = HeapCreate(0, (1ULL << 10), (1ULL << 40) );
+    _win_heap = HeapCreate(0, (1ULL << 10), (1ULL << 30) );
+    if (!_win_heap) {
+      volatile DWORD lastError = GetLastError();
+      __debugbreak();
+    }
   }
 
   void *Allocate(AllocatorCache *cache, uptr size, uptr alignment,
@@ -36,13 +40,16 @@ class MyAllocator
     // Check heap is inited.
     if (!_win_heap) { __debugbreak(); }
     // Prefer zero-init the heap.
+    // TODO: no alignment guarentee in HeapAlloc, lucky if it fits alignment
+    // requirement. If use _aligned_malloc(which is using malloc), will it work?
     uptr res = (uptr)HeapAlloc(_win_heap, HEAP_ZERO_MEMORY, size );
     // If it fails, enter debug.
-    if (!res) { __debugbreak(); }
+    //if (!res) { __debugbreak(); }
     // Alignment needs to be checked.
     if (alignment > 8)
       CHECK_EQ(res & (alignment - 1), 0);
 
+    //return 0;
     return (void*)res;
   }
 
@@ -111,6 +118,7 @@ class MyAllocator
   void TestOnlyUnmap() {}
 
   void InitCache(AllocatorCache *cache) {
+    /* __debugbreak(); */
   }
 
   void DestroyCache(AllocatorCache *cache) {
