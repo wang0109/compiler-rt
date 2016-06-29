@@ -24,6 +24,8 @@
 using namespace __sanitizer;
 using namespace std;
 
+#pragma comment(linker,"/STACK:36777216")
+
 typedef BasicBitVector<u8> BV1;
 typedef BasicBitVector<> BV2;
 typedef TwoLevelBitVector<> BV3;
