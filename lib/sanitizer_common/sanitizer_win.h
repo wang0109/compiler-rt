@@ -68,26 +68,40 @@ class WinHeapAllocator
 
   void *Allocate(AllocatorCache *cache, uptr size, uptr alignment,
                  bool cleared = false, bool check_rss_limit = false) {
+    // Copy/pasted code from CombinedAllocator.
+    // Returning 0 on malloc(0) may break a lot of code.
+    if (size == 0)
+      size = 1;
+    if (size + alignment < size)
+      return ReturnNullOrDie();
+    if (check_rss_limit && RssLimitIsExceeded())
+      return ReturnNullOrDie();
+    if (alignment > 8)
+      size = RoundUpTo(size, alignment);
+    ////////
+
     // TODO(wwchrome).
     // Ignored: cache, alignment, cleared, check_rss_limit.
     //
     //
     // Size is 0 does not make sense.
-    if (!size) { __debugbreak(); }
+    if (!size) {
+      __debugbreak();
+    }
     // Check heap is inited.
-    if (!_win_heap) { __debugbreak(); }
+    if (!_win_heap) {
+      __debugbreak();
+    }
     // Prefer zero-init the heap.
     // TODO: no alignment guarentee in HeapAlloc, lucky if it fits alignment
     // requirement. If use _aligned_malloc(which is using malloc), will it work?
-    uptr res = (uptr)HeapAlloc(_win_heap, HEAP_ZERO_MEMORY, size );
+    uptr res = (uptr)HeapAlloc(_win_heap, HEAP_ZERO_MEMORY, size);
     // If it fails, enter debug.
-    //if (!res) { __debugbreak(); }
+    // if (!res) { __debugbreak(); }
     // Alignment needs to be checked.
-    if (alignment > 8)
-      CHECK_EQ(res & (alignment - 1), 0);
+    if (alignment > 8) CHECK_EQ(res & (alignment - 1), 0);
 
-    //return 0;
-    return (void*)res;
+    return (void *)res;
   }
 
   bool MayReturnNull() const {
