@@ -95,7 +95,7 @@ static  // Exception handler for dealing with shadow memory.
   LPVOID addr = reinterpret_cast<LPVOID>(
       exception_pointers->ExceptionRecord->ExceptionInformation[1]);
   // Check valid shadow range.
-  if ( !AddrIsInLowShadow(addr) )
+  if ( !AddrIsInShadow(addr) )
     return EXCEPTION_CONTINUE_SEARCH;
 
   // This is an access violation while trying to read from the shadow. Commit
