@@ -29,7 +29,6 @@
 #include "sanitizer_placement_new.h"
 #include "sanitizer_stacktrace.h"
 #include "sanitizer_win.h"
-extern bool AddrIsInShadow(uptr a);
 
 namespace __sanitizer {
 
@@ -70,62 +69,6 @@ uptr GetTid() {
 
 uptr GetThreadSelf() {
   return GetTid();
-}
-
-static SIZE_T page_size = 0;
-static SIZE_T alloc_granularity = 0;
-
-static  // Exception handler for dealing with shadow memory.
-    LONG CALLBACK
-    ShadowExceptionHandler(PEXCEPTION_POINTERS exception_pointers) {
-  // One-time init.
-  if (page_size == 0) {
-    SYSTEM_INFO system_info = {};
-    ::GetSystemInfo(&system_info);
-    page_size = system_info.dwPageSize;
-    alloc_granularity = system_info.dwAllocationGranularity;
-  }
-  // Only handle access violations.
-  if (exception_pointers->ExceptionRecord->ExceptionCode !=
-      EXCEPTION_ACCESS_VIOLATION) {
-    return EXCEPTION_CONTINUE_SEARCH;
-  }
-
-  // Only handle access violations that land within the shadow memory.
-  LPVOID addr = reinterpret_cast<LPVOID>(
-      exception_pointers->ExceptionRecord->ExceptionInformation[1]);
-  // Check valid shadow range.
-  if ( !AddrIsInShadow((uptr)addr) )
-    return EXCEPTION_CONTINUE_SEARCH;
-
-  // This is an access violation while trying to read from the shadow. Commit
-  // the relevant page and let execution continue.
-
-  // Determine the address of the page that is being accessed.
-  LPVOID page = reinterpret_cast<LPVOID>(reinterpret_cast<uintptr_t>(addr) &
-                                         ~(page_size - 1));
-
-  // Query the existing page.
-  MEMORY_BASIC_INFORMATION mem_info = {};
-  if (::VirtualQuery(page, &mem_info, sizeof(mem_info)) == 0)
-    return EXCEPTION_CONTINUE_SEARCH;
-
-  // If the memory isn't part of any reservation, then reserve the chunk of
-  // pages.
-  if (mem_info.AllocationBase == 0) {
-    LPVOID chunk = reinterpret_cast<LPVOID>(reinterpret_cast<uintptr_t>(addr) &
-                                            ~(alloc_granularity - 1));
-    auto result =
-        ::VirtualAlloc(chunk, alloc_granularity, MEM_RESERVE, PAGE_READONLY);
-    if (result != chunk) return EXCEPTION_CONTINUE_SEARCH;
-  }
-
-  // Commit the page.
-  auto result = ::VirtualAlloc(page, page_size, MEM_COMMIT, PAGE_READWRITE);
-  if (result != page) return EXCEPTION_CONTINUE_SEARCH;
-
-  // The page mapping succeeded, so continue execution as usual.
-  return EXCEPTION_CONTINUE_EXECUTION;
 }
 
 void InitializeSEHonWindows64() {
