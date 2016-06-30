@@ -29,6 +29,7 @@
 #include "sanitizer_placement_new.h"
 #include "sanitizer_stacktrace.h"
 #include "sanitizer_win.h"
+#include "asan/asan_mapping.h"
 
 namespace __sanitizer {
 
@@ -93,11 +94,8 @@ static  // Exception handler for dealing with shadow memory.
   // Only handle access violations that land within the shadow memory.
   LPVOID addr = reinterpret_cast<LPVOID>(
       exception_pointers->ExceptionRecord->ExceptionInformation[1]);
-
   // Check valid shadow range.
-  if (addr < kLowShadowBeg ||
-      (addr >= kLowShadowEnd && addr < kHighShadowBeg) ||
-      addr >= kHighShadowEng)
+  if ( !AddrIsInLowShadow(addr) )
     return EXCEPTION_CONTINUE_SEARCH;
 
   // This is an access violation while trying to read from the shadow. Commit
