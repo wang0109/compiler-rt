@@ -29,7 +29,7 @@
 #include "sanitizer_placement_new.h"
 #include "sanitizer_stacktrace.h"
 #include "sanitizer_win.h"
-#include "lib/asan/asan_mapping.h"
+extern bool AddrIsInShadow(uptr a);
 
 namespace __sanitizer {
 
