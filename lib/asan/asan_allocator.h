@@ -115,9 +115,9 @@ struct AsanMapUnmapCallback {
 };
 #if SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
 typedef __sanitizer::WinHeapSizeClassMap SizeClassMap;
-typedef __sanitizer::WWinHeapAllocatorCache AllocatorCache;
-typedef __sanitizer::WWinHeapPrimaryAllocator PrimaryAllocator;
-typedef __sanitizer::WWinHeapAllocator AsanAllocator;
+typedef __sanitizer::WinHeapAllocatorCache AllocatorCache;
+typedef __sanitizer::WinHeapPrimaryAllocator PrimaryAllocator;
+typedef __sanitizer::WinHeapAllocator AsanAllocator;
 static const uptr kNumberOfSizeClasses = SizeClassMap::kNumClasses;
 #else
 #if SANITIZER_CAN_USE_ALLOCATOR64
