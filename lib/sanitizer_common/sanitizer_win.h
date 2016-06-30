@@ -155,11 +155,11 @@ class WinHeapAllocator
   }
 
   uptr GetActuallyAllocatedSize(void *p) {
-    return nullptr;
+    return 0;
   }
 
   uptr TotalMemoryUsed() {
-    return nullptr;
+    return 0;
   }
 
   void TestOnlyUnmap() {}
