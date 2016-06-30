@@ -440,7 +440,7 @@ INTERCEPTOR(char*, strchrnul, const char *s, int c) {
 #endif
 
 #if SANITIZER_INTERCEPT_STRRCHR
-INTERCEPTOR(const const char*, strrchr, const char *s, int c) {
+INTERCEPTOR(const char*, strrchr, const char *s, int c) {
   void *ctx;
   if (COMMON_INTERCEPTOR_NOTHING_IS_INITIALIZED)
     return internal_strrchr(s, c);
