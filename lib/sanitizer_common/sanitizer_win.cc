@@ -95,7 +95,7 @@ static  // Exception handler for dealing with shadow memory.
   LPVOID addr = reinterpret_cast<LPVOID>(
       exception_pointers->ExceptionRecord->ExceptionInformation[1]);
   // Check valid shadow range.
-  if ( !AddrIsInShadow(addr) )
+  if ( !AddrIsInShadow((uptr)addr) )
     return EXCEPTION_CONTINUE_SEARCH;
 
   // This is an access violation while trying to read from the shadow. Commit
@@ -939,6 +939,8 @@ bool IsProcessRunning(pid_t pid) {
 
 int WaitForProcess(pid_t pid) { return -1; }
 
+
+#if SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
 void WinHeapAllocator::Init(bool may_return_null) {
   // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366599(v=vs.85).aspx
   // Use default options. Size is not tested.
@@ -994,6 +996,7 @@ void WinHeapAllocator::Deallocate(WinHeapAllocatorCache *cache, void *p) {
     __debugbreak();
   }
 }
+#endif
 
 }  // namespace __sanitizer
 
