@@ -875,7 +875,7 @@ int WaitForProcess(pid_t pid) { return -1; }
 void WinHeapAllocator::Init(bool may_return_null) {
   // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366599(v=vs.85).aspx
   // Use default options. Size is not tested.
-  _win_heap = HeapCreate(0, (1ULL << 10), (1ULL << 30));
+  _win_heap =(uptr) HeapCreate(0, (1ULL << 10), (1ULL << 30));
   if (!_win_heap) {
     /* volatile DWORD lastError = GetLastError(); */
     __debugbreak();
@@ -908,7 +908,7 @@ void *WinHeapAllocator::Allocate(WinHeapAllocatorCache *cache, uptr size,
   // Prefer zero-init the heap.
   // TODO: no alignment guarentee in HeapAlloc, lucky if it fits alignment
   // requirement. If use _aligned_malloc(which is using malloc), will it work?
-  uptr res = (uptr)HeapAlloc(_win_heap, HEAP_ZERO_MEMORY, size);
+  uptr res = (uptr)HeapAlloc((HANDLE)_win_heap, HEAP_ZERO_MEMORY, size);
   // If it fails, enter debug.
   // if (!res) { __debugbreak(); }
   // Alignment needs to be checked.
@@ -921,7 +921,7 @@ void WinHeapAllocator::Deallocate(WinHeapAllocatorCache *cache, void *p) {
   if (!p) return;
   // TODO(wwchrome).
   // No PointerIsMine checking.
-  BOOL res = HeapFree(_win_heap, 0, p);
+  BOOL res = HeapFree((HANDLE)_win_heap, 0, p);
   // 0 for failure.
   if (!res) {
     __debugbreak();
