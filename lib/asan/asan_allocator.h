@@ -129,6 +129,9 @@ const uptr kAllocatorSize  =  0x20000000000ULL;  // 2T.
 // so no need to different values for different VMA.
 const uptr kAllocatorSpace =  0x10000000000ULL;
 const uptr kAllocatorSize  =  0x10000000000ULL;  // 3T.
+# elif SANITIZER_WINDOWS64
+const uptr kAllocatorSpace =  0x10000000000ULL; // This works on the unit tests.
+const uptr kAllocatorSize  =  0x10000000000ULL;
 # else
 const uptr kAllocatorSpace = 0x600000000000ULL;
 const uptr kAllocatorSize  =  0x40000000000ULL;  // 4T.
