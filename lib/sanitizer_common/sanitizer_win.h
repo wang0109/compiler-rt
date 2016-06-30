@@ -19,13 +19,6 @@
 #if SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
 
 namespace __sanitizer {
-// Memory allocator statistics
-enum AllocatorStat {
-  AllocatorStatAllocated,
-  AllocatorStatMapped,
-  AllocatorStatCount
-};
-
 typedef uptr AllocatorStatCounters[AllocatorStatCount];
 
 
