@@ -20,9 +20,7 @@
 #include "asan_interceptors.h"
 #include "sanitizer_common/sanitizer_allocator.h"
 #include "sanitizer_common/sanitizer_list.h"
-#if SANITZER_WINDOWS64
 #include "sanitizer_common/sanitizer_win.h"
-#endif
 
 namespace __asan {
 
@@ -116,10 +114,10 @@ struct AsanMapUnmapCallback {
   void OnUnmap(uptr p, uptr size) const;
 };
 #if SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
-typedef WinHeapSizeClassMap SizeClassMap;
-typedef WinHeapAllocatorCache AllocatorCache;
-typedef WinHeapPrimaryAllocator PrimaryAllocator;
-typedef WinHeapAllocator AsanAllocator;
+typedef __sanitizer::WinHeapSizeClassMap SizeClassMap;
+typedef __sanitizer::WWinHeapAllocatorCache AllocatorCache;
+typedef __sanitizer::WWinHeapPrimaryAllocator PrimaryAllocator;
+typedef __sanitizer::WWinHeapAllocator AsanAllocator;
 static const uptr kNumberOfSizeClasses = SizeClassMap::kNumClasses;
 #else
 #if SANITIZER_CAN_USE_ALLOCATOR64
