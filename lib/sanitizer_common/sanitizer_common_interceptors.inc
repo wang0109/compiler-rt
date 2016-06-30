@@ -375,7 +375,7 @@ static inline void StrstrCheck(void *ctx, char *r, const char *s1,
 #endif
 
 #if SANITIZER_INTERCEPT_STRSTR
-INTERCEPTOR(char*, strstr, const char *s1, const char *s2) {
+INTERCEPTOR(const char*, strstr, const char *s1, const char *s2) {
   if (COMMON_INTERCEPTOR_NOTHING_IS_INITIALIZED)
     return internal_strstr(s1, s2);
   void *ctx;
