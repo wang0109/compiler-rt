@@ -420,6 +420,10 @@ static void AsanInitInternal() {
   SetCanPoisonMemory(flags()->poison_heap);
   SetMallocContextSize(common_flags()->malloc_context_size);
 
+#if SANITIZER_WINDOWS64
+  InitializeSEHonWindows64();
+#endif
+
   InitializeHighMemEnd();
 
   // Make sure we are not statically linked.
