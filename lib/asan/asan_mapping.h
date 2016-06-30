@@ -290,7 +290,8 @@ static inline bool AddrIsInMidShadow(uptr a) {
   return kMidMemBeg && a >= kMidShadowBeg && a <= kMidMemEnd;
 }
 
-static inline bool AddrIsInShadow(uptr a) {
+//FIXME: remove static to allow external use
+inline bool AddrIsInShadow(uptr a) {
   PROFILE_ASAN_MAPPING();
   return AddrIsInLowShadow(a) || AddrIsInMidShadow(a) || AddrIsInHighShadow(a);
 }
