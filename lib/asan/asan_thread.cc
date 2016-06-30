@@ -448,7 +448,7 @@ void __sanitizer_start_switch_fiber(void **fakestacksave, const void *bottom,
 
 SANITIZER_INTERFACE_ATTRIBUTE
 void __sanitizer_finish_switch_fiber(void* fakestack) {
-  AsanThread *t = GetCurrentThread();
+  AsanThread *t = __asan::GetCurrentThread();
   if (!t) {
     VReport(1, "__asan_finish_switch_fiber called from unknown thread\n");
     return;
