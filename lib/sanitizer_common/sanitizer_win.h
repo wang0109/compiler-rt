@@ -141,7 +141,7 @@ class WinHeapAllocator
   }
 
  private:
-  HANDLE _win_heap;
+  uptr _win_heap;
   /* PrimaryAllocator primary_; */
   /* SecondaryAllocator secondary_; */
   AllocatorGlobalStats stats_;
