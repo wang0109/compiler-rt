@@ -45,8 +45,6 @@ class WinHeapPrimaryAllocator {
 // Dummy class.
 class WinHeapAllocatorCache {};
 
-template <class PrimaryAllocator, class AllocatorCache,
-          class SecondaryAllocator>  // NOLINT
 class WinHeapAllocator
 {
  public:
@@ -66,7 +64,7 @@ class WinHeapAllocator
     }
   }
 
-  void *Allocate(AllocatorCache *cache, uptr size, uptr alignment,
+  void *Allocate(WinHeapAllocatorCache *cache, uptr size, uptr alignment,
                  bool cleared = false, bool check_rss_limit = false) {
     // Copy/pasted code from CombinedAllocator.
     // Returning 0 on malloc(0) may break a lot of code.
@@ -122,7 +120,7 @@ class WinHeapAllocator
   void SetRssLimitIsExceeded(bool rss_limit_is_exceeded) {
   }
 
-  void Deallocate(AllocatorCache *cache, void *p) {
+  void Deallocate(WinHeapAllocatorCache *cache, void *p) {
     if (!p) return;
     // TODO(wwchrome).
     // No PointerIsMine checking.
@@ -131,7 +129,7 @@ class WinHeapAllocator
     if (!res) { __debugbreak(); }
   }
 
-  void *Reallocate(AllocatorCache *cache, void *p, uptr new_size,
+  void *Reallocate(WinHeapAllocatorCache *cache, void *p, uptr new_size,
                    uptr alignment) {
     return NULL;
   }
@@ -168,14 +166,14 @@ class WinHeapAllocator
 
   void TestOnlyUnmap() {}
 
-  void InitCache(AllocatorCache *cache) {
+  void InitCache(WinHeapAllocatorCache *cache) {
     /* __debugbreak(); */
   }
 
-  void DestroyCache(AllocatorCache *cache) {
+  void DestroyCache(WinHeapAllocatorCache *cache) {
   }
 
-  void SwallowCache(AllocatorCache *cache) {
+  void SwallowCache(WinHeapAllocatorCache *cache) {
   }
 
   void GetStats(AllocatorStatCounters s) const {
@@ -201,9 +199,9 @@ class WinHeapAllocator
   HANDLE _win_heap;
   /* PrimaryAllocator primary_; */
   /* SecondaryAllocator secondary_; */
-  /* AllocatorGlobalStats stats_; */
-  /* atomic_uint8_t may_return_null_; */
-  /* atomic_uint8_t rss_limit_is_exceeded_; */
+  AllocatorGlobalStats stats_;
+  atomic_uint8_t may_return_null_;
+  atomic_uint8_t rss_limit_is_exceeded_;
 };
 
 } // namespace __sanitizer
