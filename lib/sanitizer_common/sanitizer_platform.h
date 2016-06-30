@@ -178,6 +178,14 @@
 # endif
 #endif
 
+//FIXME
+#define DEBUG_TEST 1
+
+#if DEBUG_TEST
+// wwchrome: do not use this, try the original allocator..
+#   define SANITIZER_CAN_USE_WINHEAP_ALLOCATOR 0
+#else
+
 // On Windows, we use existing windows APIs to implement a simple allocator.
 #ifndef SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
 # if defined(_WIN32)
@@ -186,6 +194,8 @@
 // TODO : Move this to zero  TODO(wwchrome): fix it
 #   define SANITIZER_CAN_USE_WINHEAP_ALLOCATOR 1
 # endif
+#endif
+
 #endif
 
 // The range of addresses which can be returned my mmap.
