@@ -421,7 +421,8 @@ class SizeClassAllocator64 {
 
   // Test-only.
   void TestOnlyUnmap() {
-    UnmapWithCallback(SpaceBeg(), kSpaceSize + AdditionalSize());
+    UnmapWithCallback(SpaceBeg(), kSpaceSize);
+    UnmapWithCallback(SpaceEnd(), AdditionalSize());
   }
 
   void PrintStats() {

@@ -34,9 +34,9 @@
 #if !SANITIZER_DEBUG
 
 #if SANITIZER_CAN_USE_ALLOCATOR64
-static const uptr kAllocatorSpace = 0x700000000000ULL;
-static const uptr kAllocatorSize  = 0x010000000000ULL;  // 1T.
-static const u64 kAddressSpaceSize = 1ULL << 47;
+static const uptr kAllocatorSpace = 0x10000000000ULL;
+static const uptr kAllocatorSize  =  0x10000000000ULL;  // 1T.
+static const u64 kAddressSpaceSize = 1ULL << 40;
 
 typedef SizeClassAllocator64<
   kAllocatorSpace, kAllocatorSize, 16, DefaultSizeClassMap> Allocator64;
@@ -252,10 +252,12 @@ TEST(SanitizerCommon, SizeClassAllocator64GetBlockBegin) {
 TEST(SanitizerCommon, SizeClassAllocator64CompactGetBlockBegin) {
   SizeClassAllocatorGetBlockBeginStress<Allocator64Compact>();
 }
+#endif  // SANITIZER_CAN_USE_ALLOCATOR64
+
 TEST(SanitizerCommon, SizeClassAllocator32CompactGetBlockBegin) {
   SizeClassAllocatorGetBlockBeginStress<Allocator32Compact>();
 }
-#endif  // SANITIZER_CAN_USE_ALLOCATOR64
+
 
 struct TestMapUnmapCallback {
   static int map_count, unmap_count;
@@ -283,7 +285,8 @@ TEST(SanitizerCommon, SizeClassAllocator64MapUnmapCallback) {
   a->AllocateBatch(&stats, &cache, 32);
   EXPECT_EQ(TestMapUnmapCallback::map_count, 3);  // State + alloc + metadata.
   a->TestOnlyUnmap();
-  EXPECT_EQ(TestMapUnmapCallback::unmap_count, 1);  // The whole thing.
+  // Expect unmapping of 'memory space' and 'additional memory'.
+  EXPECT_EQ(TestMapUnmapCallback::unmap_count, 2);
   delete a;
 }
 #endif
