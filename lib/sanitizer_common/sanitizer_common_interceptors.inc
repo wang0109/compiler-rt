@@ -364,7 +364,7 @@ INTERCEPTOR(int, strncasecmp, const char *s1, const char *s2, SIZE_T n) {
 #endif
 
 #if SANITIZER_INTERCEPT_STRSTR || SANITIZER_INTERCEPT_STRCASESTR
-static inline void StrstrCheck(void *ctx, char *r, const char *s1,
+static inline void StrstrCheck(void *ctx, const char *r, const char *s1,
                                const char *s2) {
     uptr len1 = REAL(strlen)(s1);
     uptr len2 = REAL(strlen)(s2);
