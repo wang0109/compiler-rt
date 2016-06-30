@@ -17,10 +17,9 @@
 
 #include "sanitizer_platform.h"
 #if SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
+#include "sanitizer_allocator.h"
 
 namespace __sanitizer {
-typedef uptr AllocatorStatCounters[AllocatorStatCount];
-
 
 // These dummy classes are needed because it is needed to emulate external APIs
 // of the CombinedAllocator.
