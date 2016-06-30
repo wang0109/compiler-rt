@@ -13,12 +13,10 @@
 
 #ifndef SANITIZER_WIN_H
 #define SANITIZER_WIN_H
-//// FIXME
-#define NULL 0
 
-#include "sanitizer_platform.h"
 
 #if SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
+#include "sanitizer_platform.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -107,7 +105,7 @@ class WinHeapAllocator
   }
 
   void *ReturnNullOrDie() {
-    return NULL;
+    return nullptr;
   }
 
   void SetMayReturnNull(bool may_return_null) {
@@ -131,7 +129,7 @@ class WinHeapAllocator
 
   void *Reallocate(WinHeapAllocatorCache *cache, void *p, uptr new_size,
                    uptr alignment) {
-    return NULL;
+    return nullptr;
   }
 
   bool PointerIsMine(void *p) {
@@ -143,25 +141,25 @@ class WinHeapAllocator
   }
 
   void *GetMetaData(const void *p) {
-    return NULL;
+    return nullptr;
   }
 
   void *GetBlockBegin(const void *p) {
-    return NULL;
+    return nullptr;
   }
 
   // This function does the same as GetBlockBegin, but is much faster.
   // Must be called with the allocator locked.
   void *GetBlockBeginFastLocked(void *p) {
-    return NULL;
+    return nullptr;
   }
 
   uptr GetActuallyAllocatedSize(void *p) {
-    return NULL;
+    return nullptr;
   }
 
   uptr TotalMemoryUsed() {
-    return NULL;
+    return nullptr;
   }
 
   void TestOnlyUnmap() {}
