@@ -115,7 +115,13 @@ struct AsanMapUnmapCallback {
   void OnMap(uptr p, uptr size) const;
   void OnUnmap(uptr p, uptr size) const;
 };
-
+#if SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
+typedef WinHeapSizeClassMap SizeClassMap;
+typedef WinHeapAllocatorCache AllocatorCache;
+typedef WinHeapPrimaryAllocator PrimaryAllocator;
+typedef WinHeapAllocator AsanAllocator;
+static const uptr kNumberOfSizeClasses = SizeClassMap::kNumClasses;
+#else
 #if SANITIZER_CAN_USE_ALLOCATOR64
 # if defined(__powerpc64__)
 const uptr kAllocatorSpace =  0xa0000000000ULL;
@@ -158,6 +164,7 @@ typedef WinHeapAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
 typedef CombinedAllocator<PrimaryAllocator, AllocatorCache,
    SecondaryAllocator> AsanAllocator;
 #endif
+#endif  // SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
 
 struct AsanThreadLocalMallocStorage {
   uptr quarantine_cache[16];
