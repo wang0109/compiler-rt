@@ -47,8 +47,8 @@ bool OverrideImportedFunction(const char *module_to_patch,
 #if defined(INTERCEPTION_DYNAMIC_CRT)
 #define INTERCEPT_FUNCTION_WIN(func)                                           \
   ::__interception::OverrideFunction(#func,                                    \
-                                     (::__interception::uptr)WRAP(func),       \
-                                     (::__interception::uptr *)&REAL(func))
+                                     reinterpret_cast<::__interception::uptr>(WRAP(func)),       \
+                                     reinterpret_cast<::__interception::uptr *>(&REAL(func)))
 #else
 #define INTERCEPT_FUNCTION_WIN(func)                                           \
   ::__interception::OverrideFunction((::__interception::uptr)func,             \
