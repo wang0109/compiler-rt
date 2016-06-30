@@ -29,7 +29,7 @@
 #include "sanitizer_placement_new.h"
 #include "sanitizer_stacktrace.h"
 #include "sanitizer_win.h"
-#include "asan/asan_mapping.h"
+#include "lib/asan/asan_mapping.h"
 
 namespace __sanitizer {
 
