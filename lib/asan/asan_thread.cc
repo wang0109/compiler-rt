@@ -438,7 +438,7 @@ extern "C" {
 SANITIZER_INTERFACE_ATTRIBUTE
 void __sanitizer_start_switch_fiber(void **fakestacksave, const void *bottom,
                                     uptr size) {
-  AsanThread *t = GetCurrentThread();
+  AsanThread *t = __asan::GetCurrentThread();
   if (!t) {
     VReport(1, "__asan_start_switch_fiber called from unknown thread\n");
     return;
