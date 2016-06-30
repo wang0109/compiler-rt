@@ -10,11 +10,11 @@
 // Windows-specific syscall wrappers and classes.
 //
 //===----------------------------------------------------------------------===//
-//// FIXME
-#define NULL 0
 
 #ifndef SANITIZER_WIN_H
 #define SANITIZER_WIN_H
+//// FIXME
+#define NULL 0
 
 #include "sanitizer_platform.h"
 
