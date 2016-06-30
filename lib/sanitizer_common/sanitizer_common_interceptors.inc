@@ -364,7 +364,7 @@ INTERCEPTOR(int, strncasecmp, const char *s1, const char *s2, SIZE_T n) {
 #endif
 
 #if SANITIZER_INTERCEPT_STRSTR || SANITIZER_INTERCEPT_STRCASESTR
-static inline void StrstrCheck(void *ctx, const char *r, const char *s1,
+static inline void StrstrCheck(void *ctx, char *r, const char *s1,
                                const char *s2) {
     uptr len1 = REAL(strlen)(s1);
     uptr len2 = REAL(strlen)(s2);
@@ -375,12 +375,12 @@ static inline void StrstrCheck(void *ctx, const char *r, const char *s1,
 #endif
 
 #if SANITIZER_INTERCEPT_STRSTR
-INTERCEPTOR(const char*, strstr, const char *s1, const char *s2) {
+INTERCEPTOR(char*, strstr, const char *s1, const char *s2) {
   if (COMMON_INTERCEPTOR_NOTHING_IS_INITIALIZED)
     return internal_strstr(s1, s2);
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, strstr, s1, s2);
-  const char *r = REAL(strstr)(s1, s2);
+  char *r = REAL(strstr)(s1, s2);
   if (common_flags()->intercept_strstr)
     StrstrCheck(ctx, r, s1, s2);
   return r;
@@ -407,12 +407,12 @@ INTERCEPTOR(char*, strcasestr, const char *s1, const char *s2) {
 #endif
 
 #if SANITIZER_INTERCEPT_STRCHR
-INTERCEPTOR(const char*, strchr, const char *s, int c) {
+INTERCEPTOR(char*, strchr, const char *s, int c) {
   void *ctx;
   if (COMMON_INTERCEPTOR_NOTHING_IS_INITIALIZED)
     return internal_strchr(s, c);
   COMMON_INTERCEPTOR_ENTER(ctx, strchr, s, c);
-  const char *result = REAL(strchr)(s, c);
+  char *result = REAL(strchr)(s, c);
   uptr len = internal_strlen(s);
   uptr n = result ? result - s + 1 : len + 1;
   if (common_flags()->intercept_strchr)
@@ -440,7 +440,7 @@ INTERCEPTOR(char*, strchrnul, const char *s, int c) {
 #endif
 
 #if SANITIZER_INTERCEPT_STRRCHR
-INTERCEPTOR(const char*, strrchr, const char *s, int c) {
+INTERCEPTOR(char*, strrchr, const char *s, int c) {
   void *ctx;
   if (COMMON_INTERCEPTOR_NOTHING_IS_INITIALIZED)
     return internal_strrchr(s, c);
@@ -486,10 +486,10 @@ INTERCEPTOR(SIZE_T, strcspn, const char *s1, const char *s2) {
 #endif
 
 #if SANITIZER_INTERCEPT_STRPBRK
-INTERCEPTOR(const char *, strpbrk, const char *s1, const char *s2) {
+INTERCEPTOR(char *, strpbrk, const char *s1, const char *s2) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, strpbrk, s1, s2);
-  const char *r = REAL(strpbrk)(s1, s2);
+  char *r = REAL(strpbrk)(s1, s2);
   if (common_flags()->intercept_strpbrk) {
     COMMON_INTERCEPTOR_READ_RANGE(ctx, s2, REAL(strlen)(s2) + 1);
     COMMON_INTERCEPTOR_READ_STRING(ctx, s1,
