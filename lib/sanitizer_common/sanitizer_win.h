@@ -15,11 +15,8 @@
 #define SANITIZER_WIN_H
 
 
-#if SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
 #include "sanitizer_platform.h"
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#if SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
 
 namespace __sanitizer {
 
@@ -52,53 +49,10 @@ class WinHeapAllocator
   void InitLinkerInitialized(bool may_return_null) {
   }
 
-  void Init(bool may_return_null) {
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366599(v=vs.85).aspx
-    // Use default options. Size is not tested.
-    _win_heap = HeapCreate(0, (1ULL << 10), (1ULL << 30) );
-    if (!_win_heap) {
-      /* volatile DWORD lastError = GetLastError(); */
-      __debugbreak();
-    }
-  }
+  void Init(bool may_return_null);
 
   void *Allocate(WinHeapAllocatorCache *cache, uptr size, uptr alignment,
-                 bool cleared = false, bool check_rss_limit = false) {
-    // Copy/pasted code from CombinedAllocator.
-    // Returning 0 on malloc(0) may break a lot of code.
-    if (size == 0)
-      size = 1;
-    if (size + alignment < size)
-      return ReturnNullOrDie();
-    if (check_rss_limit && RssLimitIsExceeded())
-      return ReturnNullOrDie();
-    if (alignment > 8)
-      size = RoundUpTo(size, alignment);
-    ////////
-
-    // TODO(wwchrome).
-    // Ignored: cache, alignment, cleared, check_rss_limit.
-    //
-    //
-    // Size is 0 does not make sense.
-    if (!size) {
-      __debugbreak();
-    }
-    // Check heap is inited.
-    if (!_win_heap) {
-      __debugbreak();
-    }
-    // Prefer zero-init the heap.
-    // TODO: no alignment guarentee in HeapAlloc, lucky if it fits alignment
-    // requirement. If use _aligned_malloc(which is using malloc), will it work?
-    uptr res = (uptr)HeapAlloc(_win_heap, HEAP_ZERO_MEMORY, size);
-    // If it fails, enter debug.
-    // if (!res) { __debugbreak(); }
-    // Alignment needs to be checked.
-    if (alignment > 8) CHECK_EQ(res & (alignment - 1), 0);
-
-    return (void *)res;
-  }
+                 bool cleared = false, bool check_rss_limit = false);
 
   bool MayReturnNull() const {
     return false;
@@ -118,14 +72,7 @@ class WinHeapAllocator
   void SetRssLimitIsExceeded(bool rss_limit_is_exceeded) {
   }
 
-  void Deallocate(WinHeapAllocatorCache *cache, void *p) {
-    if (!p) return;
-    // TODO(wwchrome).
-    // No PointerIsMine checking.
-    BOOL res = HeapFree(_win_heap, 0, p);
-    // 0 for failure.
-    if (!res) { __debugbreak(); }
-  }
+  void Deallocate(WinHeapAllocatorCache *cache, void *p);
 
   void *Reallocate(WinHeapAllocatorCache *cache, void *p, uptr new_size,
                    uptr alignment) {
