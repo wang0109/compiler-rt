@@ -71,14 +71,6 @@ uptr GetThreadSelf() {
   return GetTid();
 }
 
-void InitializeSEHonWindows64() {
-  // Install our exception handler.
-  auto handler = AddVectoredExceptionHandler(TRUE, &ShadowExceptionHandler);
-  if (handler == NULL) {
-    __debugbreak();
-  }
-}
-
 #if !SANITIZER_GO
 void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
                                 uptr *stack_bottom) {
