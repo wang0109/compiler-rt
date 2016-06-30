@@ -598,7 +598,7 @@ using namespace __asan;  // NOLINT
 
 void NOINLINE __asan_handle_no_return() {
   int local_stack;
-  AsanThread *curr_thread = __asan::GetCurrentThread();
+  AsanThread *curr_thread = GetCurrentThread();
   uptr PageSize = GetPageSizeCached();
   uptr top, bottom;
   if (curr_thread) {

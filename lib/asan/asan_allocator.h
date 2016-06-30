@@ -135,7 +135,7 @@ const uptr kAllocatorSize  =  0x40000000000ULL;  // 4T.
 # endif
 typedef DefaultSizeClassMap SizeClassMap;
 typedef SizeClassAllocator64<kAllocatorSpace, kAllocatorSize, 0 /*metadata*/,
-     SizeClassMap, AsanMapUnmapCallback> PrimaryAllocator;
+    SizeClassMap, AsanMapUnmapCallback> PrimaryAllocator;
 #else  // Fallback to SizeClassAllocator32.
 static const uptr kRegionSizeLog = 20;
 static const uptr kNumRegions = SANITIZER_MMAP_RANGE_SIZE >> kRegionSizeLog;
@@ -154,14 +154,8 @@ typedef SizeClassAllocator32<0, SANITIZER_MMAP_RANGE_SIZE, 16,
 static const uptr kNumberOfSizeClasses = SizeClassMap::kNumClasses;
 typedef SizeClassAllocatorLocalCache<PrimaryAllocator> AllocatorCache;
 typedef LargeMmapAllocator<AsanMapUnmapCallback> SecondaryAllocator;
-#ifdef SANITZER_WINDOWS64
-// wwchrome: Roll my own allocator.
-typedef WinHeapAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
-    AsanAllocator;
-#else
 typedef CombinedAllocator<PrimaryAllocator, AllocatorCache,
-   SecondaryAllocator> AsanAllocator;
-#endif
+    SecondaryAllocator> AsanAllocator;
 #endif  // SANITIZER_CAN_USE_WINHEAP_ALLOCATOR
 
 struct AsanThreadLocalMallocStorage {

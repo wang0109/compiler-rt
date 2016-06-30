@@ -446,9 +446,9 @@ void TestCombinedAllocator() {
       WinHeapAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
       Allocator;
 #else
-  //typedef
-   //   CombinedAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
-    //  Allocator;
+  typedef
+      CombinedAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
+      Allocator;
 #endif
 
   Allocator *a = new Allocator;
@@ -457,10 +457,6 @@ void TestCombinedAllocator() {
   AllocatorCache cache;
   memset(&cache, 0, sizeof(cache));
   a->InitCache(&cache);
-
-  //volatile void *p = a->Allocate(&cache, -1, 1);
-  //volatile void *p = a->Allocate(&cache, 100, 1);
-
 
   EXPECT_EQ(a->Allocate(&cache, -1, 1), (void*)0);
   EXPECT_EQ(a->Allocate(&cache, -1, 1024), (void*)0);
@@ -506,15 +502,6 @@ void TestCombinedAllocator() {
   a->TestOnlyUnmap();
   */
 }
-
-#if SANITIZER_WINDOWS64
-// test my allocator.
-TEST(SanitizerCommon, CombinedAllocator64) {
-  TestCombinedAllocator<Allocator64,
-      LargeMmapAllocator<>,
-      SizeClassAllocatorLocalCache<Allocator64> > ();
-}
-#endif
 
 #if SANITIZER_CAN_USE_ALLOCATOR64
 TEST(SanitizerCommon, CombinedAllocator64) {
@@ -756,9 +743,8 @@ TEST(SanitizerCommon, SizeClassAllocator32Iteration) {
 }
 
 TEST(SanitizerCommon, LargeMmapAllocatorIteration) {
-  //LargeMmapAllocator<> a;
-  //a.Init(/* may_return_null */ false);
-  /*
+  LargeMmapAllocator<> a;
+  a.Init(/* may_return_null */ false);
   AllocatorStats stats;
   stats.Init();
 
@@ -781,14 +767,11 @@ TEST(SanitizerCommon, LargeMmapAllocatorIteration) {
   }
   for (uptr i = 0; i < kNumAllocs; i++)
     a.Deallocate(&stats, allocated[i]);
-    */
 }
 
 TEST(SanitizerCommon, LargeMmapAllocatorBlockBegin) {
-  
-  //LargeMmapAllocator<> a;
-  //a.Init(/* may_return_null */ false);
-  /*
+  LargeMmapAllocator<> a;
+  a.Init(/* may_return_null */ false);
   AllocatorStats stats;
   stats.Init();
 
@@ -821,7 +804,6 @@ TEST(SanitizerCommon, LargeMmapAllocatorBlockBegin) {
 
   for (uptr i = 0; i < kNumAllocs; i++)
     a.Deallocate(&stats, allocated[i]);
-    */
 }
 
 
