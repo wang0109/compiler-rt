@@ -59,7 +59,7 @@ class WinHeapAllocator
     // Use default options. Size is not tested.
     _win_heap = HeapCreate(0, (1ULL << 10), (1ULL << 30) );
     if (!_win_heap) {
-      volatile DWORD lastError = GetLastError();
+      /* volatile DWORD lastError = GetLastError(); */
       __debugbreak();
     }
   }
