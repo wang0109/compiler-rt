@@ -28,6 +28,7 @@
 #include "sanitizer_mutex.h"
 #include "sanitizer_placement_new.h"
 #include "sanitizer_stacktrace.h"
+#include "sanitizer_win.h"
 
 namespace __sanitizer {
 
