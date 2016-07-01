@@ -173,8 +173,13 @@ void *MmapFixedNoReserve(uptr fixed_addr, uptr size, const char *name) {
   // FIXME: is this really "NoReserve"? On Win32 this does not matter much,
   // but on Win64 it does.
   (void)name; // unsupported
+#if SANITIZER_WINDOWS64
+  void *p = VirtualAlloc((LPVOID)fixed_addr, size,
+      MEM_RESERVE, PAGE_READWRITE);
+#else
   void *p = VirtualAlloc((LPVOID)fixed_addr, size,
       MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+#endif
   if (p == 0)
     Report("ERROR: %s failed to "
            "allocate %p (%zd) bytes at %p (error code: %d)\n",
