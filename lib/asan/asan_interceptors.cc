@@ -725,19 +725,19 @@ void InitializeAsanInterceptors() {
   InitializeCommonInterceptors();
 
   // Intercept mem* functions.
-  ASAN_INTERCEPT_FUNC(memmove);
-  ASAN_INTERCEPT_FUNC(memset);
+  /* ASAN_INTERCEPT_FUNC(memmove); */
+  /* ASAN_INTERCEPT_FUNC(memset); */
   if (PLATFORM_HAS_DIFFERENT_MEMCPY_AND_MEMMOVE) {
     ASAN_INTERCEPT_FUNC(memcpy);
   }
 
   // Intercept str* functions.
-  ASAN_INTERCEPT_FUNC(strcat);  // NOLINT
-  ASAN_INTERCEPT_FUNC(strcpy);  // NOLINT
-  ASAN_INTERCEPT_FUNC(wcslen);
-  ASAN_INTERCEPT_FUNC(strncat);
-  ASAN_INTERCEPT_FUNC(strncpy);
-  ASAN_INTERCEPT_FUNC(strdup);
+  /* ASAN_INTERCEPT_FUNC(strcat);  // NOLINT */
+  /* ASAN_INTERCEPT_FUNC(strcpy);  // NOLINT */
+  /* ASAN_INTERCEPT_FUNC(wcslen); */
+  /* ASAN_INTERCEPT_FUNC(strncat); */
+  /* ASAN_INTERCEPT_FUNC(strncpy); */
+  /* ASAN_INTERCEPT_FUNC(strdup); */
 #if ASAN_INTERCEPT___STRDUP
   ASAN_INTERCEPT_FUNC(__strdup);
 #endif
@@ -745,16 +745,16 @@ void InitializeAsanInterceptors() {
   ASAN_INTERCEPT_FUNC(index);
 #endif
 
-  ASAN_INTERCEPT_FUNC(atoi);
-  ASAN_INTERCEPT_FUNC(atol);
-  ASAN_INTERCEPT_FUNC(strtol);
+  /* ASAN_INTERCEPT_FUNC(atoi); */
+  /* ASAN_INTERCEPT_FUNC(atol); */
+  /* ASAN_INTERCEPT_FUNC(strtol); */
 #if ASAN_INTERCEPT_ATOLL_AND_STRTOLL
   ASAN_INTERCEPT_FUNC(atoll);
   ASAN_INTERCEPT_FUNC(strtoll);
 #endif
 
   // Intecept signal- and jump-related functions.
-  ASAN_INTERCEPT_FUNC(longjmp);
+  /* ASAN_INTERCEPT_FUNC(longjmp); */
 #if ASAN_INTERCEPT_SIGNAL_AND_SIGACTION
   ASAN_INTERCEPT_FUNC(sigaction);
 #if SANITIZER_ANDROID
