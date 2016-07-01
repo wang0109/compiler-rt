@@ -275,6 +275,8 @@ static size_t RoundUpToInstrBoundary(size_t size, char *code) {
 }
 
 bool OverrideFunction(uptr old_func, uptr new_func, uptr *orig_old_func) {
+  // FIXME(wwchrome). Just avoid corrupting the codes for a moment.
+  return false;
   // Function overriding works basically like this:
   // On Win32, We write "jmp <new_func>" (5 bytes) at the beginning of
   // the 'old_func' to override it.
