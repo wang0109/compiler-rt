@@ -56,10 +56,10 @@ bool OverrideImportedFunction(const char *module_to_patch,
                                      (::__interception::uptr *)&REAL(func)))
 #else
 #define INTERCEPT_FUNCTION_WIN(func)                                           \
-  (::__sanitizer::Report("intercepting:" #func "\n"),         \
+  (::__sanitizer::Report("non-dynamic intercepting:" #func "\n"),         \
   ::__interception::OverrideFunction((::__interception::uptr)func,             \
                                      (::__interception::uptr)WRAP(func),       \
-                                     (::__interception::uptr *)&REAL(func))
+                                     (::__interception::uptr *)&REAL(func)))
 #endif
 
 #define INTERCEPT_FUNCTION_VER_WIN(func, symver) INTERCEPT_FUNCTION_WIN(func)
