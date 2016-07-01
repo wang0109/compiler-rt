@@ -41,7 +41,7 @@ static void WriteIndirectJumpInstruction(char *jmp_from, uptr *indirect_target) 
   // XXYYZZWW is an offset from jmp_from.
   // The displacement is still 32-bit in x64, so indirect_target must be located
   // within +/- 2GB range.
-  int offset = (int)(indirect_target - (uptr *)jmp_from);
+  int offset = (int)(indirect_target - (uptr *)jmp_from - 6);
   jmp_from[0] = '\xFF';
   jmp_from[1] = '\x25';
   *(int*)(jmp_from + 2) = offset;
