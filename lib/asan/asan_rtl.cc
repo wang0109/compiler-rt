@@ -446,7 +446,8 @@ static void AsanInitInternal() {
   // Setup internal allocator callback.
   SetLowLevelAllocateCallback(OnLowLevelAllocate);
 
-  InitializeAsanInterceptors();
+  // FIXME(wwchrome). Disalbe interceptors for a while..
+  //InitializeAsanInterceptors();
 
   // Enable system log ("adb logcat") on Android.
   // Doing this before interceptors are initialized crashes in:
