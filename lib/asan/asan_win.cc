@@ -240,7 +240,7 @@ ShadowExceptionHandler(PEXCEPTION_POINTERS exception_pointers) {
       exception_pointers->ExceptionRecord->ExceptionInformation[1]);
 
   // Check valid shadow range.
-  if (AddrIsInShadow((uptr)addr)) {
+  if (!AddrIsInShadow((uptr)addr)) {
     return EXCEPTION_CONTINUE_SEARCH;
   }
 
