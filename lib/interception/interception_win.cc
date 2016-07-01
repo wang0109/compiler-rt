@@ -303,6 +303,10 @@ static size_t RoundUpToInstrBoundary(size_t size, char *code) {
 bool OverrideFunction(uptr old_func, uptr new_func, uptr *orig_old_func) {
   static int counter = 0;
   counter++;
+  //break at 27th
+  if (counter == 27) {
+    __debugbreak();
+  }
   __sanitizer::Report("counteter: %d, overriding old_func at addr: %llx\n", counter,
                       (old_func));
   // Function overriding works basically like this:
