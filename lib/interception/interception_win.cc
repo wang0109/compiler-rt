@@ -40,12 +40,12 @@ static void _memcpy(void *dst, void *src, size_t sz) {
 }
 
 #if SANITIZER_WINDOWS64
-static void WriteIndirectJumpInstruction(char *jmp_from, uptr *indirect_target) {  // NOLINT
+static void WriteIndirectJumpInstruction(char *jmp_from, char *indirect_target) {  // NOLINT
   // jmp [rip + XXYYZZWW] = FF 25 WW ZZ YY XX, where
   // XXYYZZWW is an offset from jmp_from.
   // The displacement is still 32-bit in x64, so indirect_target must be located
   // within +/- 2GB range.
-  int offset = (int)(indirect_target - (uptr *)jmp_from - 6);
+  int offset = (int)(indirect_target - jmp_from - 6);
   jmp_from[0] = '\xFF';
   jmp_from[1] = '\x25';
   *(int*)(jmp_from + 2) = offset;
@@ -67,8 +67,8 @@ static void WriteTrampolineJumpInstruction(char *jmp_from, char *to) {
   //   jmp [rip + 6]
   //   .quad to
   // Store the address.
-  uptr *indirect_target = (uptr *)(jmp_from + 6);
-  *indirect_target = (uptr)to;
+  char *indirect_target = jmp_from + 6;
+  *(uptr*)indirect_target = (uptr)to;
   // Write the indirect jump.
   WriteIndirectJumpInstruction(jmp_from, indirect_target);
 #else
@@ -83,8 +83,8 @@ static void WriteInterceptorJumpInstruction(char *jmp_from, char *to) {
   //   jmp [rip - 8]
   //   .quad to
   // Store the address.
-  uptr *indirect_target = (uptr *)(jmp_from - 8);
-  *indirect_target = (uptr)to;
+  char *indirect_target = jmp_from - 8;
+  *(uptr*)indirect_target = (uptr)to;
   // Write the indirect jump.
   WriteIndirectJumpInstruction(jmp_from, indirect_target);
 #else
