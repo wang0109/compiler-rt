@@ -372,7 +372,6 @@ bool OverrideFunction(uptr old_func, uptr new_func, uptr *orig_old_func) {
                       head + kExtraPrevBytes, old_prot, &unused_prot))
     return false;  // not clear if this failure bothers us.
 
-  __debugbreak();
   return true;
 }
 
