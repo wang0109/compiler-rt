@@ -127,7 +127,7 @@ extern int asan_inited;
 // Used to avoid infinite recursion in __asan_init().
 extern bool asan_init_is_running;
 extern void (*death_callback)(void);
-
+void InitializeSEHonWindows64();
 // These magic values are written to shadow for better error reporting.
 const int kAsanHeapLeftRedzoneMagic = 0xfa;
 const int kAsanHeapRightRedzoneMagic = 0xfb;
