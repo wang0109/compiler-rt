@@ -21,6 +21,10 @@
 #ifndef INTERCEPTION_WIN_H
 #define INTERCEPTION_WIN_H
 
+namespace __sanitizer {
+  void Report(const char *format, ...);
+}
+
 namespace __interception {
 // All the functions in the OverrideFunction() family return true on success,
 // false on failure (including "couldn't find the function").
@@ -46,11 +50,13 @@ bool OverrideImportedFunction(const char *module_to_patch,
 
 #if defined(INTERCEPTION_DYNAMIC_CRT)
 #define INTERCEPT_FUNCTION_WIN(func)                                           \
+  (::__sanitizer::Report("dynamic intercepting:" #func "\n"),         \
   ::__interception::OverrideFunction(#func,                                    \
                                      (::__interception::uptr)WRAP(func),       \
-                                     (::__interception::uptr *)&REAL(func))
+                                     (::__interception::uptr *)&REAL(func)))
 #else
 #define INTERCEPT_FUNCTION_WIN(func)                                           \
+  (::__sanitizer::Report("intercepting:" #func "\n"),         \
   ::__interception::OverrideFunction((::__interception::uptr)func,             \
                                      (::__interception::uptr)WRAP(func),       \
                                      (::__interception::uptr *)&REAL(func))
