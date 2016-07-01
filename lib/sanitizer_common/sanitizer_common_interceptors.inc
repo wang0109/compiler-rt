@@ -5811,24 +5811,24 @@ static void InitializeCommonInterceptors() {
   interceptor_metadata_map = new((void *)&metadata_mem) MetadataHashMap();
 
   INIT_TEXTDOMAIN;
-  INIT_STRLEN;
-  INIT_STRNLEN;
-  INIT_STRCMP;
-  INIT_STRNCMP;
+  /* INIT_STRLEN; */
+  /* INIT_STRNLEN; */
+  /* INIT_STRCMP; */
+  /* INIT_STRNCMP; */
   INIT_STRCASECMP;
   INIT_STRNCASECMP;
-  INIT_STRSTR;
+  /* INIT_STRSTR; */
   INIT_STRCASESTR;
-  INIT_STRCHR;
+  /* INIT_STRCHR; */
   INIT_STRCHRNUL;
-  INIT_STRRCHR;
-  INIT_STRSPN;
-  INIT_STRPBRK;
-  INIT_MEMSET;
-  INIT_MEMMOVE;
+  /* INIT_STRRCHR; */
+  /* INIT_STRSPN; */
+  /* INIT_STRPBRK; */
+  /* INIT_MEMSET; */
+  /* INIT_MEMMOVE; */
   INIT_MEMCPY;
   INIT_MEMCHR;
-  INIT_MEMCMP;
+  /* INIT_MEMCMP; */
   INIT_MEMRCHR;
   INIT_READ;
   INIT_PREAD;
@@ -5850,7 +5850,7 @@ static void InitializeCommonInterceptors() {
   INIT_PRINTF;
   INIT_PRINTF_L;
   INIT_ISOC99_PRINTF;
-  INIT_FREXP;
+  /* INIT_FREXP; */
   INIT_FREXPF_FREXPL;
   INIT_GETPWNAM_AND_FRIENDS;
   INIT_GETPWNAM_R_AND_FRIENDS;
