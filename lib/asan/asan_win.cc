@@ -151,8 +151,8 @@ INTERCEPTOR_WINAPI(DWORD, NtWaitForWorkViaWorkerFactory, DWORD a, DWORD b) {
 namespace __asan {
 
 void InitializePlatformInterceptors() {
-  ASAN_INTERCEPT_FUNC(CreateThread);
-  ASAN_INTERCEPT_FUNC(RaiseException);
+  /* ASAN_INTERCEPT_FUNC(CreateThread); */
+  /* ASAN_INTERCEPT_FUNC(RaiseException); */
 
 // TODO(wwchrome): Win64 uses _C_specific_handler instead.
 #ifndef _WIN64
@@ -161,10 +161,10 @@ void InitializePlatformInterceptors() {
 #endif
 
   // NtWaitForWorkViaWorkerFactory is always linked dynamically.
-  CHECK(::__interception::OverrideFunction(
-      "NtWaitForWorkViaWorkerFactory",
-      (uptr)WRAP(NtWaitForWorkViaWorkerFactory),
-      (uptr *)&REAL(NtWaitForWorkViaWorkerFactory)));
+  /* CHECK(::__interception::OverrideFunction( */
+  /*     "NtWaitForWorkViaWorkerFactory", */
+  /*     (uptr)WRAP(NtWaitForWorkViaWorkerFactory), */
+  /*     (uptr *)&REAL(NtWaitForWorkViaWorkerFactory))); */
 }
 
 void AsanApplyToGlobals(globals_op_fptr op, const void *needle) {
