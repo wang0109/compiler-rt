@@ -45,7 +45,47 @@ static void WriteIndirectJumpInstruction(char *jmp_from, char *indirect_target) 
   // XXYYZZWW is an offset from jmp_from.
   // The displacement is still 32-bit in x64, so indirect_target must be located
   // within +/- 2GB range.
+ 
+
+
+  int offset = (int)(indirect_target - jmp_from - 6);
+  jmp_from[0] = '\xFF';
+  jmp_from[1] = '\x25';
+  *(int*)(jmp_from + 2) = offset;
+}
+#else
+static void WriteJumpInstruction(char *jmp_from, char *to) {
+  // jmp XXYYZZWW = E9 WW ZZ YY XX, where XXYYZZWW is an offset from jmp_from
+  // to the next instruction to the destination.
+  ptrdiff_t offset = to - jmp_from - 5;
+  *jmp_from = '\xE9';
+  *(ptrdiff_t*)(jmp_from + 1) = offset;
+}
+#endif
+
+static void WriteTrampolineJumpInstruction(char *jmp_from, char *to) {
+#if SANITIZER_WINDOWS64
+  // Emit an indirect jump through immediately following bytes:
+  // jmp_from:
+  //   jmp [rip + 6]
+  //   .quad to
+  // Store the address.
+  char *indirect_target = jmp_from + 6;
+  *(uptr*)indirect_target = (uptr)to;
+  // Write the indirect jump.
+  WriteIndirectJumpInstruction(jmp_from, indirect_target);
+#else
+  WriteJumpInstruction(jmp_from, to);
+#endif
+}
+
+static void WriteInterceptorJumpInstruction(char *jmp_from, char *to) {
+#if SANITIZER_WINDOWS64
+
   static void *pointers_page = 0;
+  static uptr pointers_counter = 0;
+
+  static const uptr kLimitRange = (100ULL) << 20; // 10 Meg
 
   if (pointers_page != 0) {
     Report("Already found pointer page!\n");
@@ -108,7 +148,7 @@ static void WriteIndirectJumpInstruction(char *jmp_from, char *indirect_target) 
 
 
     // for loop
-    for (uptr curr_addr = next_begin; curr_addr < (uptr)(jmp_from + (3ULL << 20)); /* 3MB */) {
+    for (uptr curr_addr = next_begin; curr_addr < next_begin + kLimitRange; ) {
 
 
       MEMORY_BASIC_INFORMATION info;
@@ -139,7 +179,7 @@ static void WriteIndirectJumpInstruction(char *jmp_from, char *indirect_target) 
 
       if (info.State == MEM_FREE) { // 0x10000
 
-        // acquire it
+                                    // acquire it
         uptr free_begin = (uptr)info.BaseAddress;
 
         Report("free_begin before roundup: %llx\n", free_begin);
@@ -156,7 +196,7 @@ static void WriteIndirectJumpInstruction(char *jmp_from, char *indirect_target) 
         else {
 
 
-          Report("Trying to reserve at: %llx, for size: %llx, with MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE\n", next_alloc_begin, page_size);
+          Report("Trying to reserve at: %llx, for size: %llx, with MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE\n", next_alloc_begin, alloc_granularity);
 
 
           LPVOID alloced = ::VirtualAlloc((LPVOID)next_alloc_begin, alloc_granularity, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -199,14 +239,14 @@ static void WriteIndirectJumpInstruction(char *jmp_from, char *indirect_target) 
           break;
         }
       }
-   
+
 
       uptr cur_region_size = info.RegionSize;
 
       curr_addr += cur_region_size;
 
 
-      if (curr_addr >= (uptr)(jmp_from + (3ULL << 20)) ) {
+      if (curr_addr >= next_begin + kLimitRange) {
         Report("Failed to locate pointer page!\n");
         __debugbreak();
       }
@@ -214,43 +254,15 @@ static void WriteIndirectJumpInstruction(char *jmp_from, char *indirect_target) 
     }
 
     Report("out of loop..\n");
-  }
-
-
-
-  int offset = (int)(indirect_target - jmp_from - 6);
-  jmp_from[0] = '\xFF';
-  jmp_from[1] = '\x25';
-  *(int*)(jmp_from + 2) = offset;
-}
-#else
-static void WriteJumpInstruction(char *jmp_from, char *to) {
-  // jmp XXYYZZWW = E9 WW ZZ YY XX, where XXYYZZWW is an offset from jmp_from
-  // to the next instruction to the destination.
-  ptrdiff_t offset = to - jmp_from - 5;
-  *jmp_from = '\xE9';
-  *(ptrdiff_t*)(jmp_from + 1) = offset;
-}
-#endif
-
-static void WriteTrampolineJumpInstruction(char *jmp_from, char *to) {
-#if SANITIZER_WINDOWS64
-  // Emit an indirect jump through immediately following bytes:
-  // jmp_from:
-  //   jmp [rip + 6]
-  //   .quad to
-  // Store the address.
-  char *indirect_target = jmp_from + 6;
-  *(uptr*)indirect_target = (uptr)to;
-  // Write the indirect jump.
-  WriteIndirectJumpInstruction(jmp_from, indirect_target);
-#else
-  WriteJumpInstruction(jmp_from, to);
-#endif
 }
 
-static void WriteInterceptorJumpInstruction(char *jmp_from, char *to) {
-#if SANITIZER_WINDOWS64
+
+
+
+
+
+
+
   // Emit an indirect jump through immediately following bytes:
   // jmp_from:
   //   jmp [rip - 8]
