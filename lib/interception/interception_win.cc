@@ -206,7 +206,7 @@ static void WriteIndirectJumpInstruction(char *jmp_from, char *indirect_target) 
       curr_addr += cur_region_size;
 
 
-      if (curr_addr >= (uptr)(jmp_from + (3ULL << 20)) {
+      if (curr_addr >= (uptr)(jmp_from + (3ULL << 20)) ) {
         Report("Failed to locate pointer page!\n");
         __debugbreak();
       }
