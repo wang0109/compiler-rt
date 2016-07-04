@@ -199,31 +199,17 @@ static void WriteIndirectJumpInstruction(char *jmp_from, char *indirect_target) 
           break;
         }
       }
-      else {
-
-        /*
-        Report("Cur page: at %llx, region_size: %llx\n", info.BaseAddress, info.RegionSize);
-
-        switch (info.State) {
-        case MEM_FREE:
-          Report("State: Free\n");
-          break;
-        case MEM_RESERVE:
-          Report("State: Reserve\n");
-          break;
-        case MEM_COMMIT:
-          Report("State: COmmit\n");
-          break;
-        default:
-          __debugbreak();
-        }
-        */
-
-      }
+   
 
       uptr cur_region_size = info.RegionSize;
 
       curr_addr += cur_region_size;
+
+
+      if (curr_addr >= (uptr)(jmp_from + (3ULL << 20)) {
+        Report("Failed to locate pointer page!\n");
+        __debugbreak();
+      }
 
     }
 
