@@ -45,6 +45,193 @@ static void WriteIndirectJumpInstruction(char *jmp_from, char *indirect_target) 
   // XXYYZZWW is an offset from jmp_from.
   // The displacement is still 32-bit in x64, so indirect_target must be located
   // within +/- 2GB range.
+  static void *pointers_page = 0;
+
+  if (pointers_page != 0) {
+    Report("Already found pointer page!\n");
+  }
+  else {
+    // Search for one single page after current image.
+    // Get current allocation begin.
+    MEMORY_BASIC_INFORMATION cur_info;
+    if (0 == ::VirtualQuery(jmp_from, &cur_info, sizeof(cur_info))) {
+
+      // jmp_from should be allocated already!
+      __debugbreak();
+
+    }
+
+    // find current allocation begin
+    uptr alloc_begin = (uptr)cur_info.AllocationBase;
+    uptr region_size = (uptr)cur_info.RegionSize;
+    uptr next_begin = alloc_begin + region_size;
+
+
+    Report("Cur page: at %llx, region_size: %llx\n", alloc_begin, region_size);
+
+    switch (cur_info.State) {
+    case MEM_FREE:
+      Report("State: Free\n");
+      break;
+    case MEM_RESERVE:
+      Report("State: Reserve\n");
+      break;
+    case MEM_COMMIT:
+      Report("State: COmmit\n");
+      break;
+    default:
+      __debugbreak();
+    }
+
+
+
+
+    static SIZE_T alloc_granularity = 0;
+    static SIZE_T page_size = 0;
+
+    if (alloc_granularity == 0) {
+
+      SYSTEM_INFO system_info = {};
+      ::GetSystemInfo(&system_info);
+      //page_size = system_info.dwPageSize;
+      alloc_granularity = system_info.dwAllocationGranularity;
+      page_size = system_info.dwPageSize;
+
+      if (!alloc_granularity) {
+        //must work.
+        __debugbreak();
+      }
+
+
+    }
+
+
+
+    // for loop
+    for (uptr curr_addr = next_begin; curr_addr < (uptr)(jmp_from + (3ULL << 20)); /* 3MB */) {
+
+
+      MEMORY_BASIC_INFORMATION info;
+      if (0 == ::VirtualQuery((LPCVOID)curr_addr, &info, sizeof(info))) {
+
+        // jmp_from should be allocated already!
+        __debugbreak();
+
+      }
+
+
+      Report("Cur page: at %llx, region_size: %llx\n", info.BaseAddress, info.RegionSize);
+
+      switch (info.State) {
+      case MEM_FREE:
+        Report("State: Free\n");
+        break;
+      case MEM_RESERVE:
+        Report("State: Reserve\n");
+        break;
+      case MEM_COMMIT:
+        Report("State: COmmit\n");
+        break;
+      default:
+        __debugbreak();
+      }
+
+
+      if (info.State == MEM_FREE) { // 0x10000
+
+        // acquire it
+        uptr free_begin = (uptr)info.BaseAddress;
+
+        Report("free_begin before roundup: %llx\n", free_begin);
+
+        // check if enough space for one alloc_granularity
+
+        // round up to next alloc_granularity
+        uptr next_alloc_begin = ((free_begin - 1) & ~(alloc_granularity - 1)) + alloc_granularity;
+        uptr next_alloc_end = next_alloc_begin + alloc_granularity;
+
+        if (free_begin + (uptr)info.RegionSize < next_alloc_end) {
+          Report("Not enough size 1, with region_size:%llx, cannot reach: %llx\n", info.RegionSize, next_alloc_end);
+        }
+        else {
+
+
+          Report("Trying to reserve at: %llx, for size: %llx, with MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE\n", next_alloc_begin, page_size);
+
+
+          LPVOID alloced = ::VirtualAlloc((LPVOID)next_alloc_begin, alloc_granularity, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+          //LPVOID alloced = ::VirtualAlloc((LPVOID)next_alloc_begin, page_size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+          // LPVOID alloced = ::VirtualAlloc((LPVOID)free_begin, alloc_granularity, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+          if (alloced == NULL) {
+
+            uptr error = (uptr)GetLastError();
+            Report("Last errro code in decimal: %lld\n", error);
+            __debugbreak();
+          }
+          else {
+            Report("Free page allocated at: %llx, free_begin was: %llx\n", (uptr)alloced, free_begin);
+
+            //query back
+
+            MEMORY_BASIC_INFORMATION query;
+            if (0 == ::VirtualQuery((LPCVOID)alloced, &query, sizeof(query))) {
+
+              // jmp_from should be allocated already!
+              __debugbreak();
+
+            }
+            else {
+              Report("I was allocated at: %llx, given region_size: %llx\n", (uptr)query.AllocationBase, (uptr)query.RegionSize);
+            }
+
+
+          }
+
+
+
+
+
+          pointers_page = alloced;
+
+          //found it 
+          Report("Found it!!!\n");
+          break;
+        }
+      }
+      else {
+
+        /*
+        Report("Cur page: at %llx, region_size: %llx\n", info.BaseAddress, info.RegionSize);
+
+        switch (info.State) {
+        case MEM_FREE:
+          Report("State: Free\n");
+          break;
+        case MEM_RESERVE:
+          Report("State: Reserve\n");
+          break;
+        case MEM_COMMIT:
+          Report("State: COmmit\n");
+          break;
+        default:
+          __debugbreak();
+        }
+        */
+
+      }
+
+      uptr cur_region_size = info.RegionSize;
+
+      curr_addr += cur_region_size;
+
+    }
+
+    Report("out of loop..\n");
+  }
+
+
+
   int offset = (int)(indirect_target - jmp_from - 6);
   jmp_from[0] = '\xFF';
   jmp_from[1] = '\x25';
