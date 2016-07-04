@@ -18,6 +18,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+
 namespace __sanitizer {
   void Report(const char* format, ...);
 }
@@ -85,6 +86,25 @@ static void WriteInterceptorJumpInstruction(char *jmp_from, char *to) {
   static void *pointers_page = 0;
   static uptr pointers_counter = 0;
 
+  static SIZE_T alloc_granularity = 0;
+  static SIZE_T page_size = 0;
+
+  if (alloc_granularity == 0) {
+
+    SYSTEM_INFO system_info = {};
+    ::GetSystemInfo(&system_info);
+    //page_size = system_info.dwPageSize;
+    alloc_granularity = system_info.dwAllocationGranularity;
+    page_size = system_info.dwPageSize;
+
+    if (!alloc_granularity) {
+      //must work.
+      __debugbreak();
+    }
+
+
+  }
+
   static const uptr kLimitRange = (100ULL) << 20; // 10 Meg
 
   if (pointers_page != 0) {
@@ -126,24 +146,7 @@ static void WriteInterceptorJumpInstruction(char *jmp_from, char *to) {
 
 
 
-    static SIZE_T alloc_granularity = 0;
-    static SIZE_T page_size = 0;
 
-    if (alloc_granularity == 0) {
-
-      SYSTEM_INFO system_info = {};
-      ::GetSystemInfo(&system_info);
-      //page_size = system_info.dwPageSize;
-      alloc_granularity = system_info.dwAllocationGranularity;
-      page_size = system_info.dwPageSize;
-
-      if (!alloc_granularity) {
-        //must work.
-        __debugbreak();
-      }
-
-
-    }
 
 
 
@@ -268,7 +271,21 @@ static void WriteInterceptorJumpInstruction(char *jmp_from, char *to) {
   //   jmp [rip - 8]
   //   .quad to
   // Store the address.
-  char *indirect_target = jmp_from - 8;
+  //char *indirect_target = jmp_from - 8;
+
+char *indirect_target = (char*)pointers_page + (pointers_counter * 8);
+pointers_counter++;
+
+if (pointers_counter >= (alloc_granularity >> 3)) {
+  __debugbreak();
+}
+
+ptrdiff_t distance =  indirect_target - jmp_from;
+if (distance > INT32_MAX || distance < INT32_MIN) {
+  __debugbreak();
+}
+
+   
   *(uptr*)indirect_target = (uptr)to;
   // Write the indirect jump.
   WriteIndirectJumpInstruction(jmp_from, indirect_target);
