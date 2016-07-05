@@ -82,187 +82,10 @@ static void WriteTrampolineJumpInstruction(char *jmp_from, char *to) {
 #endif
 }
 
-static void WriteInterceptorJumpInstruction(char *jmp_from, char *to) {
+static void WriteInterceptorJumpInstruction(char *jmp_from, char *to, char *pointer_store_addr) {
 #if SANITIZER_WINDOWS64
 
-  static void *pointers_page = 0;
-  static uptr pointers_counter = 0;
-
-  static SIZE_T alloc_granularity = 0;
-  static SIZE_T page_size = 0;
-
-  if (alloc_granularity == 0) {
-
-    SYSTEM_INFO system_info = {};
-    ::GetSystemInfo(&system_info);
-    //page_size = system_info.dwPageSize;
-    alloc_granularity = system_info.dwAllocationGranularity;
-    page_size = system_info.dwPageSize;
-
-    if (!alloc_granularity) {
-      //must work.
-      __debugbreak();
-    }
-
-
-  }
-
-  static const uptr kLimitRange = (100ULL) << 20; // 10 Meg
-
-  if (pointers_page != 0) {
-    Report("Already found pointer page!\n");
-  }
-  else {
-    // Search for one single page after current image.
-    // Get current allocation begin.
-    MEMORY_BASIC_INFORMATION cur_info;
-    if (0 == ::VirtualQuery(jmp_from, &cur_info, sizeof(cur_info))) {
-
-      // jmp_from should be allocated already!
-      __debugbreak();
-
-    }
-
-    // find current allocation begin
-    uptr alloc_begin = (uptr)cur_info.AllocationBase;
-    uptr region_size = (uptr)cur_info.RegionSize;
-    uptr next_begin = alloc_begin + region_size;
-
-
-    Report("Cur page: at %llx, region_size: %llx\n", alloc_begin, region_size);
-
-    switch (cur_info.State) {
-    case MEM_FREE:
-      Report("State: Free\n");
-      break;
-    case MEM_RESERVE:
-      Report("State: Reserve\n");
-      break;
-    case MEM_COMMIT:
-      Report("State: COmmit\n");
-      break;
-    default:
-      __debugbreak();
-    }
-
-
-
-
-
-
-
-
-    // for loop
-    for (uptr curr_addr = next_begin; curr_addr < next_begin + kLimitRange; ) {
-
-
-      MEMORY_BASIC_INFORMATION info;
-      if (0 == ::VirtualQuery((LPCVOID)curr_addr, &info, sizeof(info))) {
-
-        // jmp_from should be allocated already!
-        __debugbreak();
-
-      }
-
-
-      Report("Cur page: at %llx, region_size: %llx\n", info.BaseAddress, info.RegionSize);
-
-      switch (info.State) {
-      case MEM_FREE:
-        Report("State: Free\n");
-        break;
-      case MEM_RESERVE:
-        Report("State: Reserve\n");
-        break;
-      case MEM_COMMIT:
-        Report("State: COmmit\n");
-        break;
-      default:
-        __debugbreak();
-      }
-
-
-      if (info.State == MEM_FREE) { // 0x10000
-
-                                    // acquire it
-        uptr free_begin = (uptr)info.BaseAddress;
-
-        Report("free_begin before roundup: %llx\n", free_begin);
-
-        // check if enough space for one alloc_granularity
-
-        // round up to next alloc_granularity
-        uptr next_alloc_begin = ((free_begin - 1) & ~(alloc_granularity - 1)) + alloc_granularity;
-        uptr next_alloc_end = next_alloc_begin + alloc_granularity;
-
-        if (free_begin + (uptr)info.RegionSize < next_alloc_end) {
-          Report("Not enough size 1, with region_size:%llx, cannot reach: %llx\n", info.RegionSize, next_alloc_end);
-        }
-        else {
-
-
-          Report("Trying to reserve at: %llx, for size: %llx, with MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE\n", next_alloc_begin, alloc_granularity);
-
-
-          LPVOID alloced = ::VirtualAlloc((LPVOID)next_alloc_begin, alloc_granularity, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-          //LPVOID alloced = ::VirtualAlloc((LPVOID)next_alloc_begin, page_size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-          // LPVOID alloced = ::VirtualAlloc((LPVOID)free_begin, alloc_granularity, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-
-          if (alloced == NULL) {
-
-            uptr error = (uptr)GetLastError();
-            Report("Last errro code in decimal: %lld\n", error);
-            __debugbreak();
-          }
-          else {
-            Report("Free page allocated at: %llx, free_begin was: %llx\n", (uptr)alloced, free_begin);
-
-            //query back
-
-            MEMORY_BASIC_INFORMATION query;
-            if (0 == ::VirtualQuery((LPCVOID)alloced, &query, sizeof(query))) {
-
-              // jmp_from should be allocated already!
-              __debugbreak();
-
-            }
-            else {
-              Report("I was allocated at: %llx, given region_size: %llx\n", (uptr)query.AllocationBase, (uptr)query.RegionSize);
-            }
-
-
-          }
-
-
-
-
-
-          pointers_page = alloced;
-
-          //found it 
-          Report("Found it!!!\n");
-          break;
-        }
-      }
-
-
-      uptr cur_region_size = info.RegionSize;
-
-      curr_addr += cur_region_size;
-
-
-      if (curr_addr >= next_begin + kLimitRange) {
-        Report("Failed to locate pointer page!\n");
-        __debugbreak();
-      }
-
-    }
-
-    Report("out of loop..\n");
-}
-
-
-
+ 
 
 
 
@@ -275,12 +98,9 @@ static void WriteInterceptorJumpInstruction(char *jmp_from, char *to) {
   // Store the address.
   //char *indirect_target = jmp_from - 8;
 
-char *indirect_target = (char*)pointers_page + (pointers_counter * 8);
-pointers_counter++;
+  char *indirect_target = pointer_store_addr;
+//pointers_counter++;
 
-if (pointers_counter >= (alloc_granularity >> 3)) {
-  __debugbreak();
-}
 
 ptrdiff_t distance =  indirect_target - jmp_from;
 if (distance > INT32_MAX || distance < INT32_MIN) {
@@ -305,13 +125,10 @@ static char *GetMemoryForTrampoline(size_t size) {
   HMODULE curr_module = NULL;
   GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)&pool, &curr_module);
 
-
   if (curr_module == NULL) {
     __debugbreak();
   }
   else {
-
-
     MODULEINFO module_info; memset(&module_info, 0, sizeof(module_info));
     if (GetModuleInformation(GetCurrentProcess(), curr_module, &module_info, sizeof(module_info))) {
 
@@ -345,14 +162,7 @@ static char *GetMemoryForTrampoline(size_t size) {
 
       //__debugbreak();
     }
-
-
   }
-
-
-  
-
-
 
   if (!pool) {
     pool = (char *)VirtualAlloc(NULL, POOL_SIZE, MEM_RESERVE | MEM_COMMIT,
@@ -370,6 +180,247 @@ static char *GetMemoryForTrampoline(size_t size) {
   char *ret = pool + pool_used;
   pool_used += size;
   return ret;
+}
+
+
+// Allocate a new page near end of image of the intercepted function.
+// This allocates new memeory for each call.
+static char *MakeMemoryForTrampoline(char *intercept_addr, size_t size) {
+  HMODULE curr_module = NULL;
+  GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)intercept_addr, &curr_module);
+
+  char *pointers_page = 0;
+ // ptrdiff_t pointers_begin_offset = 256; //
+
+
+  if (curr_module == NULL) {
+    __debugbreak();
+  }
+  else {
+    MODULEINFO module_info; memset(&module_info, 0, sizeof(module_info));
+    if (GetModuleInformation(GetCurrentProcess(), curr_module, &module_info, sizeof(module_info))) {
+      char name_buf[256];
+      DWORD copied_size = GetModuleFileName(curr_module, (LPWSTR)name_buf, sizeof(name_buf));
+      //DWORD ret_size = GetModuleFileNameEx(&some_static_storage_scoped_object_in_your_dll, GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS);
+
+      if (copied_size == 0) {
+        __debugbreak();
+      }
+      else {
+        Report("Name of current module: %s\n", name_buf);
+      }
+
+      DWORD module_size = module_info.SizeOfImage;
+      BYTE * module_ptr = (BYTE*)module_info.lpBaseOfDll;
+
+      Report("module size: %llx, module begin ptr: %llx\n", (uptr)module_size, (uptr)module_ptr);
+
+      // Start finding some free page...
+
+
+      static SIZE_T alloc_granularity = 0;
+      static SIZE_T page_size = 0;
+
+      if (alloc_granularity == 0) {
+
+        SYSTEM_INFO system_info = {};
+        ::GetSystemInfo(&system_info);
+        //page_size = system_info.dwPageSize;
+        alloc_granularity = system_info.dwAllocationGranularity;
+        page_size = system_info.dwPageSize;
+
+        if (!alloc_granularity) {
+          //must work.
+          __debugbreak();
+        }
+
+
+      }
+
+      static const uptr kLimitRange = (100ULL) << 20; // 10 Meg
+
+      if (pointers_page != 0) {
+        // impossible to reach here, no longer static.
+        __debugbreak();
+        //Report("Already found pointer page!\n");
+      }
+      else {
+
+
+        uptr search_begin = (uptr)module_ptr + (uptr)module_size;
+        // Search for one single page after current image.
+        // Get current allocation begin.
+        MEMORY_BASIC_INFORMATION cur_info;
+        if (0 == ::VirtualQuery((LPCVOID)search_begin, &cur_info, sizeof(cur_info))) {
+
+          // jmp_from should be allocated already!
+          __debugbreak();
+
+        }
+
+        // find current allocation begin
+        uptr alloc_begin = (uptr)cur_info.AllocationBase;
+        uptr region_size = (uptr)cur_info.RegionSize;
+        uptr next_begin = search_begin;
+        //uptr next_begin = alloc_begin + region_size;
+
+
+        Report("Begin searching from region (right after end of image): at %llx, region_size: %llx\n", alloc_begin, region_size);
+
+        switch (cur_info.State) {
+        case MEM_FREE:
+          Report("State: Free\n");
+          break;
+        case MEM_RESERVE:
+          Report("State: Reserve\n");
+          break;
+        case MEM_COMMIT:
+          Report("State: COmmit\n");
+          break;
+        default:
+          __debugbreak();
+        }
+
+
+        // for loop
+        for (uptr curr_addr = next_begin; curr_addr < next_begin + kLimitRange; ) {
+
+
+          MEMORY_BASIC_INFORMATION info;
+          if (0 == ::VirtualQuery((LPCVOID)curr_addr, &info, sizeof(info))) {
+
+            // jmp_from should be allocated already!
+            __debugbreak();
+
+          }
+
+
+          Report("Cur page: at %llx, region_size: %llx\n", info.BaseAddress, info.RegionSize);
+
+          switch (info.State) {
+          case MEM_FREE:
+            Report("State: Free\n");
+            break;
+          case MEM_RESERVE:
+            Report("State: Reserve\n");
+            break;
+          case MEM_COMMIT:
+            Report("State: COmmit\n");
+            break;
+          default:
+            __debugbreak();
+          }
+
+
+          if (info.State == MEM_FREE) { // 0x10000
+
+                                        // acquire it
+            uptr free_begin = (uptr)info.BaseAddress;
+
+            Report("free_begin before roundup: %llx\n", free_begin);
+
+            // check if enough space for one alloc_granularity
+
+            // round up to next alloc_granularity
+            uptr next_alloc_begin = ((free_begin - 1) & ~(alloc_granularity - 1)) + alloc_granularity;
+            uptr next_alloc_end = next_alloc_begin + alloc_granularity;
+
+            if (free_begin + (uptr)info.RegionSize < next_alloc_end) {
+              Report("Not enough size 1, with region_size:%llx, cannot reach: %llx\n", info.RegionSize, next_alloc_end);
+            }
+            else {
+
+
+              Report("Trying to reserve at: %llx, for size: %llx, with MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE\n", next_alloc_begin, alloc_granularity);
+
+
+              LPVOID alloced = ::VirtualAlloc((LPVOID)next_alloc_begin, alloc_granularity, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+              //LPVOID alloced = ::VirtualAlloc((LPVOID)next_alloc_begin, page_size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+              // LPVOID alloced = ::VirtualAlloc((LPVOID)free_begin, alloc_granularity, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+              if (alloced == NULL) {
+
+                uptr error = (uptr)GetLastError();
+                Report("Last errro code in decimal: %lld\n", error);
+                __debugbreak();
+              }
+              else {
+                Report("Free page allocated at: %llx, free_begin was: %llx\n", (uptr)alloced, free_begin);
+
+                //query back
+
+                MEMORY_BASIC_INFORMATION query;
+                if (0 == ::VirtualQuery((LPCVOID)alloced, &query, sizeof(query))) {
+
+                  // jmp_from should be allocated already!
+                  __debugbreak();
+
+                }
+                else {
+                  Report("I was allocated at: %llx, given region_size: %llx\n", (uptr)query.AllocationBase, (uptr)query.RegionSize);
+                }
+
+
+              }
+
+
+
+
+
+              pointers_page = (char*)alloced;
+
+              //found it 
+              Report("Found it!!!\n");
+              break;
+            }
+          }
+
+
+          uptr cur_region_size = info.RegionSize;
+
+          curr_addr += cur_region_size;
+
+
+          if (curr_addr >= next_begin + kLimitRange) {
+            Report("Failed to locate pointer page!\n");
+            __debugbreak();
+          }
+
+        }
+
+        Report("out of loop..\n");
+      }
+
+    }
+    else {
+      DWORD erro = GetLastError();
+      Report("Last erro is: %lld\n", (uptr)erro);
+
+      __debugbreak();
+    }
+  }
+
+
+  /*
+  if (!pool) {
+    pool = (char *)VirtualAlloc(NULL, POOL_SIZE, MEM_RESERVE | MEM_COMMIT,
+      PAGE_EXECUTE_READWRITE);
+    // FIXME: Might want to apply PAGE_EXECUTE_READ access after all the
+    // interceptors are in place.
+    if (!pool)
+      return NULL;
+    _memset(pool, 0xCC , POOL_SIZE);
+  }
+
+  if (pool_used + size > POOL_SIZE)
+    return NULL;
+
+  char *ret = pool + pool_used;
+  pool_used += size;
+
+
+  */
+  return pointers_page;
 }
 
 // Returns 0 on error.
@@ -570,6 +621,8 @@ bool OverrideFunction(uptr old_func, uptr new_func, uptr *orig_old_func) {
   size_t kExtraPrevBytes = 0;
 #endif
   size_t head = kHeadMin;
+
+  char *trampoline = 0;
   if (orig_old_func) {
     // Find out the number of bytes of the instructions we need to copy
     // to the trampoline and store it in 'head'.
@@ -578,7 +631,11 @@ bool OverrideFunction(uptr old_func, uptr new_func, uptr *orig_old_func) {
       return false;
 
     // Put the needed instructions into the trampoline bytes.
-    char *trampoline = GetMemoryForTrampoline(head + kTrampolineJumpSize);
+#if SANITIZER_WINDOWS64
+    trampoline = MakeMemoryForTrampoline(old_bytes, head + kTrampolineJumpSize);
+#else
+    trampoline = GetMemoryForTrampoline(head + kTrampolineJumpSize);
+#endif
     if (!trampoline)
       return false;
     _memcpy(trampoline, old_bytes, head);
@@ -599,7 +656,13 @@ bool OverrideFunction(uptr old_func, uptr new_func, uptr *orig_old_func) {
                       &old_prot))
     return false;
 
-  WriteInterceptorJumpInstruction(old_bytes, (char *)new_func);
+  if (trampoline == 0)
+  {
+    __debugbreak();
+  }
+  // By design..  trampoline + 256 bytes, is where pointer is located.
+  char *pointer_stored_addr = trampoline + 256;
+  WriteInterceptorJumpInstruction(old_bytes, (char *)new_func,  pointer_stored_addr);
   _memset(old_bytes + kHeadMin, 0xCC /* int 3 */, head - kHeadMin);
 
   // Restore the original permissions.
