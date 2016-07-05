@@ -5811,10 +5811,10 @@ static void InitializeCommonInterceptors() {
   interceptor_metadata_map = new((void *)&metadata_mem) MetadataHashMap();
 
   INIT_TEXTDOMAIN;
-  INIT_STRLEN;
-  INIT_STRNLEN;
-  INIT_STRCMP;
-  INIT_STRNCMP;
+  /* INIT_STRLEN; */
+  /* INIT_STRNLEN; */
+  /* INIT_STRCMP; */
+  /* INIT_STRNCMP; */
   INIT_STRCASECMP;
   INIT_STRNCASECMP;
   /* INIT_STRSTR; */
