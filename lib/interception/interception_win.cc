@@ -18,6 +18,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <Psapi.h>
+
 
 namespace __sanitizer {
   void Report(const char* format, ...);
@@ -299,6 +301,59 @@ static char *GetMemoryForTrampoline(size_t size) {
   const int POOL_SIZE = 1024;
   static char *pool = NULL;
   static size_t pool_used = 0;
+
+  HMODULE curr_module = NULL;
+  GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)&pool, &curr_module);
+
+
+  if (curr_module == NULL) {
+    __debugbreak();
+  }
+  else {
+
+
+    MODULEINFO module_info; memset(&module_info, 0, sizeof(module_info));
+    if (GetModuleInformation(GetCurrentProcess(), curr_module, &module_info, sizeof(module_info))) {
+
+
+      char name_buf[256];
+      DWORD copied_size = GetModuleFileName(curr_module, (LPWSTR)name_buf, sizeof(name_buf) );
+
+
+      //DWORD ret_size = GetModuleFileNameEx(&some_static_storage_scoped_object_in_your_dll, GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS);
+
+      if (copied_size == 0) {
+        __debugbreak();
+      }
+      else {
+        Report("Name of current module: %s\n", name_buf);
+      }
+
+
+
+
+      DWORD module_size = module_info.SizeOfImage;
+      BYTE * module_ptr = (BYTE*)module_info.lpBaseOfDll;
+
+
+      Report("module size: %llx, module begin ptr: %llx\n", (uptr)module_size, (uptr)module_ptr);
+      // ...
+    }
+    else {
+      DWORD erro = GetLastError();
+      Report("Last erro is: %lld\n", (uptr)erro);
+
+      //__debugbreak();
+    }
+
+
+  }
+
+
+  
+
+
+
   if (!pool) {
     pool = (char *)VirtualAlloc(NULL, POOL_SIZE, MEM_RESERVE | MEM_COMMIT,
                                 PAGE_EXECUTE_READWRITE);
