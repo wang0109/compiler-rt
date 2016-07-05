@@ -68,7 +68,7 @@ static void WriteTrampolineJumpInstruction(char *jmp_from, char *to) {
 #if SANITIZER_WINDOWS64
   // Emit an indirect jump through immediately following bytes:
   // jmp_from:
-  //   jmp [rip + 6]
+  //   jmp [rip + 0] : offset is 0 because rip starts at next instr.
   //   .quad to
   // Store the address.
   char *indirect_target = jmp_from + 6;
