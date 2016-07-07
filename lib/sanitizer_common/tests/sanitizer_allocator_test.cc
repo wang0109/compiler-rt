@@ -444,15 +444,9 @@ TEST(SanitizerCommon, LargeMmapAllocator) {
 template
 <class PrimaryAllocator, class SecondaryAllocator, class AllocatorCache>
 void TestCombinedAllocator() {
-#if SANITIZER_WINDOWS64
-  typedef
-      WinHeapAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
-      Allocator;
-#else
   typedef
       CombinedAllocator<PrimaryAllocator, AllocatorCache, SecondaryAllocator>
       Allocator;
-#endif
 
   Allocator *a = new Allocator;
   a->Init(/* may_return_null */ true);
