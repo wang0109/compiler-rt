@@ -21,9 +21,9 @@
 #include <Psapi.h>
 
 
-namespace __sanitizer {
-  void Report(const char* format, ...);
-}
+/* namespace __sanitizer { */
+/*   void Report(const char* format, ...); */
+/* } */
 
 namespace __interception {
 
@@ -143,7 +143,7 @@ static char *GetMemoryForTrampoline(size_t size) {
         __debugbreak();
       }
       else {
-        Report("Name of current module: %s\n", name_buf);
+        /* Report("Name of current module: %s\n", name_buf); */
       }
 
 
@@ -153,12 +153,12 @@ static char *GetMemoryForTrampoline(size_t size) {
       BYTE * module_ptr = (BYTE*)module_info.lpBaseOfDll;
 
 
-      Report("module size: %llx, module begin ptr: %llx\n", (uptr)module_size, (uptr)module_ptr);
+      /* Report("module size: %llx, module begin ptr: %llx\n", (uptr)module_size, (uptr)module_ptr); */
       // ...
     }
     else {
       DWORD erro = GetLastError();
-      Report("Last erro is: %lld\n", (uptr)erro);
+      /* eport("Last erro is: %lld\n", (uptr)erro); */
 
       //__debugbreak();
     }
@@ -207,13 +207,13 @@ static char *MakeMemoryForTrampoline(char *intercept_addr, size_t size) {
         __debugbreak();
       }
       else {
-        Report("Name of current module: %s\n", name_buf);
+        /* Report("Name of current module: %s\n", name_buf); */
       }
 
       DWORD module_size = module_info.SizeOfImage;
       BYTE * module_ptr = (BYTE*)module_info.lpBaseOfDll;
 
-      Report("module size: %llx, module begin ptr: %llx\n", (uptr)module_size, (uptr)module_ptr);
+      /* Report("module size: %llx, module begin ptr: %llx\n", (uptr)module_size, (uptr)module_ptr); */
 
       // Start finding some free page...
 
@@ -265,17 +265,17 @@ static char *MakeMemoryForTrampoline(char *intercept_addr, size_t size) {
         //uptr next_begin = alloc_begin + region_size;
 
 
-        Report("Begin searching from region (right after end of image): at %llx, region_size: %llx\n", alloc_begin, region_size);
+        /* Report("Begin searching from region (right after end of image): at %llx, region_size: %llx\n", alloc_begin, region_size); */
 
         switch (cur_info.State) {
         case MEM_FREE:
-          Report("State: Free\n");
+          /* Report("State: Free\n"); */
           break;
         case MEM_RESERVE:
-          Report("State: Reserve\n");
+          /* Report("State: Reserve\n"); */
           break;
         case MEM_COMMIT:
-          Report("State: COmmit\n");
+          /* Report("State: COmmit\n"); */
           break;
         default:
           __debugbreak();
@@ -295,17 +295,17 @@ static char *MakeMemoryForTrampoline(char *intercept_addr, size_t size) {
           }
 
 
-          Report("Cur page: at %llx, region_size: %llx\n", info.BaseAddress, info.RegionSize);
+          /* Report("Cur page: at %llx, region_size: %llx\n", info.BaseAddress, info.RegionSize); */
 
           switch (info.State) {
           case MEM_FREE:
-            Report("State: Free\n");
+            /* Report("State: Free\n"); */
             break;
           case MEM_RESERVE:
-            Report("State: Reserve\n");
+            /* Report("State: Reserve\n"); */
             break;
           case MEM_COMMIT:
-            Report("State: COmmit\n");
+            /* Report("State: COmmit\n"); */
             break;
           default:
             __debugbreak();
@@ -317,7 +317,7 @@ static char *MakeMemoryForTrampoline(char *intercept_addr, size_t size) {
                                         // acquire it
             uptr free_begin = (uptr)info.BaseAddress;
 
-            Report("free_begin before roundup: %llx\n", free_begin);
+            /* Report("free_begin before roundup: %llx\n", free_begin); */
 
             // check if enough space for one alloc_granularity
 
@@ -326,12 +326,12 @@ static char *MakeMemoryForTrampoline(char *intercept_addr, size_t size) {
             uptr next_alloc_end = next_alloc_begin + alloc_granularity;
 
             if (free_begin + (uptr)info.RegionSize < next_alloc_end) {
-              Report("Not enough size 1, with region_size:%llx, cannot reach: %llx\n", info.RegionSize, next_alloc_end);
+              /* Report("Not enough size 1, with region_size:%llx, cannot reach: %llx\n", info.RegionSize, next_alloc_end); */
             }
             else {
 
 
-              Report("Trying to reserve at: %llx, for size: %llx, with MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE\n", next_alloc_begin, alloc_granularity);
+              /* Report("Trying to reserve at: %llx, for size: %llx, with MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE\n", next_alloc_begin, alloc_granularity); */
 
 
               LPVOID alloced = ::VirtualAlloc((LPVOID)next_alloc_begin, alloc_granularity, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -341,11 +341,11 @@ static char *MakeMemoryForTrampoline(char *intercept_addr, size_t size) {
               if (alloced == NULL) {
 
                 uptr error = (uptr)GetLastError();
-                Report("Last errro code in decimal: %lld\n", error);
+                /* Report("Last errro code in decimal: %lld\n", error); */
                 __debugbreak();
               }
               else {
-                Report("Free page allocated at: %llx, free_begin was: %llx\n", (uptr)alloced, free_begin);
+                /* Report("Free page allocated at: %llx, free_begin was: %llx\n", (uptr)alloced, free_begin); */
 
                 //query back
 
@@ -357,7 +357,7 @@ static char *MakeMemoryForTrampoline(char *intercept_addr, size_t size) {
 
                 }
                 else {
-                  Report("I was allocated at: %llx, given region_size: %llx\n", (uptr)query.AllocationBase, (uptr)query.RegionSize);
+                  /* Report("I was allocated at: %llx, given region_size: %llx\n", (uptr)query.AllocationBase, (uptr)query.RegionSize); */
                 }
 
 
@@ -370,7 +370,7 @@ static char *MakeMemoryForTrampoline(char *intercept_addr, size_t size) {
               pointers_page = (char*)alloced;
 
               //found it 
-              Report("Found it!!!\n");
+              /* Report("Found it!!!\n"); */
               break;
             }
           }
@@ -382,19 +382,19 @@ static char *MakeMemoryForTrampoline(char *intercept_addr, size_t size) {
 
 
           if (curr_addr >= next_begin + kLimitRange) {
-            Report("Failed to locate pointer page!\n");
+            /* Report("Failed to locate pointer page!\n"); */
             __debugbreak();
           }
 
         }
 
-        Report("out of loop..\n");
+        /* Report("out of loop..\n"); */
       }
 
     }
     else {
       DWORD erro = GetLastError();
-      Report("Last erro is: %lld\n", (uptr)erro);
+      /* Report("Last erro is: %lld\n", (uptr)erro); */
 
       __debugbreak();
     }
@@ -615,8 +615,8 @@ bool OverrideFunction(uptr old_func, uptr new_func, uptr *orig_old_func) {
   if (counter == 27) {
     __debugbreak();
   }
-  __sanitizer::Report("counteter: %d, overriding old_func at addr: %llx\n", counter,
-                      (old_func));
+  /* __sanitizer::Report("counteter: %d, overriding old_func at addr: %llx\n", counter, */
+  /*                     (old_func)); */
   // Function overriding works basically like this:
   // On Win32, We write "jmp <new_func>" (5 bytes) at the beginning of
   // the 'old_func' to override it.
