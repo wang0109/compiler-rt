@@ -17,8 +17,7 @@
 #include "sanitizer_common.h"
 
 namespace __sanitizer {
-// FIXME(wwchrome): Debug only.
-#define SANITIZER_USE_MALLOC 1
+
 // ThreadSanitizer for Go uses libc malloc/free.
 #if defined(SANITIZER_GO) || defined(SANITIZER_USE_MALLOC)
 # if SANITIZER_LINUX && !SANITIZER_ANDROID
@@ -28,8 +27,6 @@ extern "C" void *__libc_realloc(void *ptr, uptr size);
 extern "C" void __libc_free(void *ptr);
 # else
 #  include <stdlib.h>
-// FIXME(wwchrome): Debug only.
-#define posix_memalign(p, a, s) (((*(p)) = _aligned_malloc((s), (a))), *(p) ?0 :errno)
 #  define __libc_malloc malloc
 static void *__libc_memalign(uptr alignment, uptr size) {
   void *p;
@@ -67,8 +64,6 @@ InternalAllocator *internal_allocator() {
 
 #else  // defined(SANITIZER_GO) || defined(SANITIZER_USE_MALLOC)
 
-// FIXME: Disable the allocator, by put invalid code..
-=================
 static ALIGNED(64) char internal_alloc_placeholder[sizeof(InternalAllocator)];
 static atomic_uint8_t internal_allocator_initialized;
 static StaticSpinMutex internal_alloc_init_mu;
