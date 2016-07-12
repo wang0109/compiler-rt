@@ -24,7 +24,6 @@
 #include "asan_report.h"
 #include "asan_stack.h"
 #include "asan_thread.h"
-#include "asan_mapping.h"
 #include "sanitizer_common/sanitizer_libc.h"
 #include "sanitizer_common/sanitizer_mutex.h"
 
