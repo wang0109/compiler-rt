@@ -70,7 +70,6 @@ uptr GetThreadSelf() {
   return GetTid();
 }
 
-
 #if !SANITIZER_GO
 void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
                                 uptr *stack_bottom) {
@@ -141,8 +140,6 @@ void *MmapAlignedOrDie(uptr size, uptr alignment, const char *mem_type) {
   for (; retries < kMaxRetries &&
          (mapped_addr == 0 || !IsAligned(mapped_addr, alignment));
        retries++) {
-    // FIXME(wwchrome): Debug only.
-    __debugbreak();
     // Overallocate size + alignment bytes.
     mapped_addr =
         (uptr)VirtualAlloc(0, size + alignment, MEM_RESERVE, PAGE_NOACCESS);
@@ -194,8 +191,6 @@ void *MmapFixedNoReserve(uptr fixed_addr, uptr size, const char *name) {
 // Memory space mapped by 'MmapFixedOrDie' must have been reserved by
 // 'MmapFixedNoAccess'.
 void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
-#if SANITIZER_WINDOWS64
-  // FIXME: looks like here must use COMMIT.
   void *p = VirtualAlloc((LPVOID)fixed_addr, size,
       MEM_COMMIT, PAGE_READWRITE);
   if (p == 0) {
@@ -213,12 +208,6 @@ void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
         (uptr)mbi.BaseAddress, (uptr)mbi.AllocationBase,
         (uptr)mbi.AllocationProtect, (uptr)mbi.RegionSize, (uptr)mbi.State,
         (uptr)mbi.Protect, (uptr)mbi.Type );
-    // print one address first.
-
-    // FIXME
-    __debugbreak();
-
-    ///////////////////////////////
     char mem_type[30];
     internal_snprintf(mem_type, sizeof(mem_type), "memory at address 0x%zx",
                       fixed_addr);
@@ -234,13 +223,8 @@ void *MmapNoReserveOrDie(uptr size, const char *mem_type) {
 
 void *MmapFixedNoAccess(uptr fixed_addr, uptr size, const char *name) {
   (void)name; // unsupported
-#if SANITIZER_WINDOWS64
   void *res = VirtualAlloc((LPVOID)fixed_addr, size,
                            MEM_RESERVE, PAGE_NOACCESS);
-#else
-  void *res = VirtualAlloc((LPVOID)fixed_addr, size,
-                           MEM_RESERVE | MEM_COMMIT, PAGE_NOACCESS);
-#endif
   if (res == 0)
     Report("WARNING: %s failed to "
            "mprotect %p (%zd) bytes at %p (error code: %d)\n",
@@ -258,8 +242,6 @@ bool MprotectNoAccess(uptr addr, uptr size) {
   // FIXME: Trace how regions become NO ACCESS.
   Report("Settup NO ACCESS region at addr: %llx for size %llx\n", (uptr)addr,
          (uptr)size);
-  // FIXME:
-  __debugbreak();
   return VirtualProtect((LPVOID)addr, size, PAGE_NOACCESS, &old_protection);
 }
 
@@ -297,30 +279,6 @@ bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
     Report("base+regionsize: %llx\n", (uptr)( (uptr)mbi.BaseAddress + mbi.RegionSize ));
   }
   return available;
-  /* return mbi.Protect == PAGE_NOACCESS && */
-  /*        (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end; */
-}
-
-bool MemoryRangeIsAvailable_dbg1(uptr range_start, uptr range_end) {
-  MEMORY_BASIC_INFORMATION mbi;
-  CHECK(VirtualQuery((void *)range_start, &mbi, sizeof(mbi)));
-  bool ret = (mbi.Protect == PAGE_NOACCESS &&
-      (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end);
-  __debugbreak();
-  return ret;
-}
-
-// rs = region size
-// ba = base address
-bool MemoryRangeIsAvailable_dbg2(uptr range_start, uptr range_end, uptr *p_ba, unsigned long long* p_rs) {
-  MEMORY_BASIC_INFORMATION mbi;
-  CHECK(VirtualQuery((void *)range_start, &mbi, sizeof(mbi)));
-  bool ret = (mbi.Protect == PAGE_NOACCESS &&
-      (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end);
-  *p_ba = (uptr)mbi.BaseAddress;
-  *p_rs = mbi.RegionSize;
-  //__debugbreak();
-  return ret;
 }
 
 void *MapFileToMemory(const char *file_name, uptr *buff_size) {
