@@ -88,7 +88,7 @@ DECLARE_REAL(uptr, strnlen, const char *s, uptr maxlen)
 DECLARE_REAL(char*, strstr, const char *s1, const char *s2)
 struct sigaction;
 DECLARE_REAL(int, sigaction, int signum, const struct sigaction *act,
-struct sigaction *oldact)
+                             struct sigaction *oldact)
 
 // FIXME: Temporarily verbose print out interception.
 #if !SANITIZER_MAC
