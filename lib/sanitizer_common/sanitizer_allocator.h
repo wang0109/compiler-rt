@@ -1267,8 +1267,6 @@ class LargeMmapAllocator {
   };
 
   Header *GetHeader(uptr p) {
-    // FIXME(wwchrome): Debug only.
-    __debugbreak();
     CHECK(IsAligned(p, page_size_));
     return reinterpret_cast<Header*>(p - page_size_);
   }
@@ -1308,7 +1306,6 @@ template <class PrimaryAllocator, class AllocatorCache,
 class CombinedAllocator {
  public:
   void InitCommon(bool may_return_null) {
-    // FIXME(wwchrome).
     primary_.Init();
     atomic_store(&may_return_null_, may_return_null, memory_order_relaxed);
   }
@@ -1323,8 +1320,6 @@ class CombinedAllocator {
     secondary_.Init(may_return_null);
     stats_.Init();
     InitCommon(may_return_null);
-    // FIXME(wwchrome): Debug only.
-    __debugbreak();
   }
 
   void *Allocate(AllocatorCache *cache, uptr size, uptr alignment,
