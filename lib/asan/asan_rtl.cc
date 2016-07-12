@@ -86,7 +86,6 @@ void ShowStatsAndAbort() {
 // Reserve memory range [beg, end].
 // We need to use inclusive range because end+1 may not be representable.
 void ReserveShadowMemoryRange(uptr beg, uptr end, const char *name) {
-	//TODO: use expection handerl to rewerite for win64
   CHECK_EQ((beg % GetMmapGranularity()), 0);
   CHECK_EQ(((end + 1) % GetMmapGranularity()), 0);
   uptr size = end - beg + 1;
@@ -328,10 +327,6 @@ static void InitializeHighMemEnd() {
 }
 
 static void ProtectGap(uptr addr, uptr size) {
-#ifdef _WIN64
-  return;
-#endif
-  //always not protect on win64
   if (!flags()->protect_shadow_gap)
     return;
   void *res = MmapFixedNoAccess(addr, size, "shadow gap");
@@ -430,7 +425,6 @@ static void AsanInitInternal() {
 
   InitializeHighMemEnd();
 
-
   // Make sure we are not statically linked.
   AsanDoesNotSupportStaticLinkage();
 
@@ -490,9 +484,6 @@ static void AsanInitInternal() {
   PrintAddressSpaceLayout();
 
   DisableCoreDumperIfNecessary();
-
-  // FIXME
-  Report("kMidMemBeg is: %llx\n", (uptr)kMidMemBeg);
 
   if (full_shadow_is_available) {
     // mmap the low shadow plus at least one page at the left.
