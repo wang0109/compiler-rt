@@ -321,11 +321,6 @@ void CovAfterFork(int child_pid);
 void InitializeCoverage(bool enabled, const char *coverage_dir);
 void ReInitializeCoverage(bool enabled, const char *coverage_dir);
 
-#if SANITIZER_WINDOWS64
-// TODO(wwchrome): Put this in a better place.
-void InitializeSEHonWindows64();
-#endif
-
 void InitTlsSize();
 uptr GetTlsSize();
 
