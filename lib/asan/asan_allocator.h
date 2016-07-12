@@ -125,7 +125,7 @@ const uptr kAllocatorSize  =  0x10000000000ULL;  // 3T.
 # elif SANITIZER_WINDOWS64
 // TODO: Check these values. Need to change it?
 // Test some offsets..
-const uptr kAllocatorSpace = 0x300000000000ULL;  // 48T (test)
+const uptr kAllocatorSpace = 0x600000000000ULL;  // 96T (same as the "else", seem working)
 const uptr kAllocatorSize  =  0x40000000000ULL;  // 4T.
 # else
 const uptr kAllocatorSpace = 0x600000000000ULL;
