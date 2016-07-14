@@ -4,7 +4,7 @@
 // RUN: %clang_cl_asan -LD -O0 %s -Fe%t.dll
 // RUN: %run %t %t.dll
 //
-// RUN: %clang_cl_asan -LD -O0 %s -Fe%t.dll
+// RUN: %clang_cl_asan -GS- -LD -O0 %s -Fe%t.dll
 // RUN: %run %t %t.dll
 
 #include <windows.h>
